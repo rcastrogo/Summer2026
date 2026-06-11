@@ -1,0 +1,42 @@
+{
+  "name": "vanilla-reactive",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/vanilla-reactive.es.js",
+  "module": "./dist/vanilla-reactive.es.js",
+  "types": "./dist/types/core/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/vanilla-reactive.es.js",
+      "require": "./dist/vanilla-reactive.iife.js",
+      "types": "./dist/types/core/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build && tsc --project tsconfig.build.json",
+    "dev": "vite serve --config vite.config.playground.ts",
+    "preview": "vite preview --config vite.config.playground.ts",
+    "lint": "eslint src/",
+    "format": "prettier --write src/"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^25.9.2",
+    "esbuild": "^0.28.0",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.6",
+    "jsdom": "^29.1.1",
+    "prettier": "^3.8.3",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.0",
+    "vite": "^8.0.16"
+  }
+}

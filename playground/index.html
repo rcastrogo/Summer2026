@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playground - VanillaReactive</title>
+  <script src="https://cdn.tailwindcss.com/3.4.15"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
+  <script src="js/icons.js"></script>
+  <script src="js/vanilla-reactive.iife.js"></script>
+  <script src="js/app-components/theme-toggle-component.js"></script>
+
+  <style>
+    body { visibility: hidden; }
+  </style>
+
+  <script>
+
+    const context = {
+      // Datos básicos para interpolación
+      userName: 'Carlos García',
+      userRole: 'Desarrollador Frontend',
+      greeting: '¡Bienvenido al demo del framework!',
+      longText: 'Este es un texto bastante largo que se va a truncar con el filtro correspondiente',
+      emptyValue: '',
+      // Estado reactivo
+      counter: 0,
+      isVisible: true,
+      dynamicClass: 'text-lg font-bold text-emerald-600',
+      // Arrays para data-each
+      tags: ['TypeScript', 'Vite', 'TailwindCSS', 'Vanilla JS', 'PubSub'],
+      tasks: [
+        { title: 'Configurar proyecto', done: true },
+        { title: 'Implementar hidratación', done: true },
+        { title: 'Crear directivas', done: true },
+        { title: 'Añadir PubSub', done: false },
+        { title: 'Documentar API', done: false },
+      ],
+      users: [
+        { name: 'Ana López', email: 'ana@example.com', avatar: 'AL' },
+        { name: 'Pedro Ruiz', email: 'pedro@example.com', avatar: 'PR' },
+        { name: 'Marta Sanz', email: 'marta@example.com', avatar: 'MS' },
+        { name: 'Luis Vega', email: 'luis@example.com', avatar: 'LV' },
+      ],
+      // Handlers de eventos
+      showAlert: (el, ev, message) => {
+        alert(message);
+      },
+
+      incrementCounter() {
+        this.counter++;
+        this.counterStatus = this.counter === 0 ? 'Contador en cero' : `Contador: ${this.counter}`;
+        this.updateBindings();
+      },
+
+      decrementCounter() {
+        this.counter--;
+        this.counterStatus = this.counter === 0 ? 'Contador en cero' : `Contador: ${this.counter}`;
+        this.updateBindings();
+      },
+
+      toggleVisible(el) {
+        this.isVisible = !this.isVisible;
+        this.updateBindings();
+      },
+
+      onInputChange(el) {
+        const display = document.getElementById('input-display');
+        if (display) display.textContent = el.value || '-';
+      },
+      bindings: []
+      ,
+      updateBindings() {
+        this.bindings.forEach(binding => {
+          VanillaReactive.resolveBindingValue(binding, this);
+        });
+      },
+      counterStatus: 'Contador en cero',
+    }
+
+    function initSubscriptions() {
+      const d = VanillaReactive.pubSub.subscribe('counter-update', (data) => {
+        const {args, event, target} = data;
+        console.log('Evento personalizado recibido:', args, event, target);
+        context.incrementCounter()
+      });
+    }
+
+    function onDocumentReady() {
+      const output = document.getElementById('api-output');
+      output.textContent = Object.keys(VanillaReactive).join('\n');    
+    }
+
+    VanillaReactive.initApp([
+      () => {
+        VanillaReactive.hydrateElement(document.body, context);
+      },
+      onDocumentReady,
+      initSubscriptions
+    ]);
+
+  </script>
+
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen py-8 transition-colors">
+  <div class="max-w-4xl mx-auto space-y-8">
+
+    <header class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">
+        <i data-icon="zap" class="size-10 inline-flex"></i> 
+              Playground - VanillaReactive
+      </h1>
+      <p class="text-gray-500 dark:text-gray-400 mt-2">Páginas de prueba para la librería reactiva (cargada como IIFE)</p>
+      <div data-component="theme-toggle-component"></div>
+      <nav class="mt-4 flex gap-3">
+        <a href="counter.html" class="text-blue-600 dark:text-blue-400 hover:underline">Counter</a>
+        <a href="todo.html" class="text-blue-600 dark:text-blue-400 hover:underline">Todo List</a>
+      </nav>
+    </header>
+
+    <section class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div data-component="clock-component"></div>
+      <div data-component="theme-toggle-component"></div>
+    </section>
+
+    <section class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4">API disponible en <code>window.VanillaReactive</code></h2>
+      <pre id="api-output" class="bg-gray-900 text-green-400 p-4 rounded text-sm overflow-auto max-h-64"></pre>
+    </section>
+
+  </div>
+
+  <div class="max-w-4xl mx-auto space-y-8">
+
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
+        <i data-icon="zap" class="size-20 inline-flex text-yellow-500"></i>
+        Framework Demo - Directivas
+      </h1>
+      <p class="text-gray-500 dark:text-gray-400 mt-2">Demostración de las funcionalidades de hidratación</p>
+
+      <div data-component="clock-component"></div>
+
+    </header>
+
+    <!-- Sección 1: Interpolación -->
+    <section class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
+        <i data-icon="globe" class="size-5"></i> Interpolación de templates
+      </h2>
+      <div class="space-y-2 text-gray-600 dark:text-gray-300">
+        <p>Nombre: <span data-bind="text:userName" class="font-medium text-blue-600"></span></p>
+        <p>Rol: <span data-bind="text:userRole" class="font-medium text-blue-600"></span></p>
+        <p>Mensaje: <span data-bind="text:greeting" class="font-medium text-blue-600"></span></p>
+      </div>
+    </section>
+
+    <!-- Sección 2: Filtros -->
+    <section class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
+        <i data-icon="sun" class="size-5"></i> Filtros
+      </h2>
+      <div class="space-y-2 text-gray-600 dark:text-gray-300">
+        <p>Mayúsculas: <span data-bind="text:userName | upper" class="font-medium text-purple-600"></span></p>
+        <p>Minúsculas: <span data-bind="text:userName | lower" class="font-medium text-purple-600"></span></p>
+        <p>Truncar: <span data-bind="text:longText | truncate:'20'" class="font-medium text-purple-600"></span></p>
+        <p>Total tareas: <span data-bind="text:tasks | length" class="font-medium text-purple-600"></span></p>
+        <p>Default: <span data-bind="text:emptyValue | default:'Sin valor'" class="font-medium text-purple-600"></span></p>
+      </div>
+    </section>
+
+    <!-- Sección 3: Eventos (on-click, on-input) -->
+    <section class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
+        <i data-icon="zap" class="size-5"></i> Eventos (on-click, on-input)
+      </h2>
+      <div class="flex flex-wrap gap-3">
+        <button 
+          on-click="showAlert:Hola desde el botón!"
+          class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition">
+          <i data-icon="info" class="inline-block size-6"></i> Alert
+        </button>
+        <button 
+          on-click="incrementCounter"
+          class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition">
+          <i data-icon="plus" class="inline-block size-6"></i> Incrementar
+        </button>
+        <button 
+          on-click="decrementCounter"
+          class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition">
+          <i data-icon="minus" class="inline-block size-6"></i> Decrementar
+        </button>
+        <button 
+          on-click="toggleVisible"
+          class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded transition">
+          <i data-icon="eye" class="inline-block size-6"></i> Toggle visibilidad
+        </button>
+      </div>
+      <div class="mt-4">
+        <input 
+          type="text" 
+          on-input="onInputChange"
+          placeholder="Escribe algo..."
+          class="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded px-3 py-2 w-full max-w-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+        <p class="mt-2 text-gray-500">Valor del input: <span id="input-display" class="font-medium text-blue-600">-</span></p>
+      </div>
+    </section>
+
+    <!-- Sección 4: Data-bind -->
+    <section class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
+        <i data-icon="user" class="size-5"></i> Data-bind
+      </h2>
+      <div class="space-y-3">
+        <p>Contador: <span data-bind="text:counter" class="text-2xl font-bold text-green-600"></span></p>
+        <div data-bind="show:isVisible" class="bg-blue-50 border border-blue-200 rounded p-4 text-blue-700">
+          Este bloque se muestra/oculta con data-bind="show:isVisible"
+        </div>
+        <div data-bind="hide:isVisible" class="bg-yellow-50 border border-yellow-200 rounded p-4 text-yellow-700">
+          Este bloque es el inverso (hide:isVisible)
+        </div>
+        <p>Clase dinámica: <span data-bind="class:dynamicClass">Texto con clase dinámica</span></p>
+      </div>
+    </section>
+
+    <!-- Sección 5: data-each (listas) -->
+    <section class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
+        <i data-icon="user" class="size-5"></i> data-each (Listas)
+      </h2>
+
+      <!-- Lista simple -->
+      <h3 class="font-medium text-gray-600 mb-2">Lista de tags (array simple):</h3>
+      <div class="flex flex-wrap gap-2 mb-6" data-each="tag in tags">
+        <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">{tag}</span>
+      </div>
+
+      <!-- Lista de objetos -->
+      <h3 class="font-medium text-gray-600 mb-2">Lista de tareas (array de objetos):</h3>
+      <ul class="space-y-2" data-each="task in tasks">
+        <li class="flex items-center gap-3 bg-gray-50 rounded p-3">
+          <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold bg-blue-100 text-blue-700">{index}</span>
+          <span class="font-medium">{task.title}</span>
+          <span class="ml-auto text-xs px-2 py-1 rounded {task.done ~ if:'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">{task.done ~ iif:'Hecho':'Pendiente'}</span>
+        </li>
+      </ul>
+
+      <!-- Lista de usuarios -->
+      <h3 class="font-medium text-gray-600 mt-6 mb-2">Tarjetas de usuarios:</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" data-each="user in users">
+        <div class="border border-gray-200 rounded-lg p-4 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold">{user.avatar}</div>
+          <div>
+            <p class="font-medium text-gray-800">{user.name}</p>
+            <p class="text-sm text-gray-500">{user.email}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección 6: PubSub -->
+    <section class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
+        <i data-icon="user" class="size-5"></i> PubSub (on-publish)
+      </h2>
+      <div class="flex gap-3 mb-4">
+        <button 
+          on-click="publish:notification::Mensaje publicado via PubSub!"
+          class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded transition">
+          Publicar notificación
+        </button>
+        <button 
+          on-click="publish:counter-update::+1"
+          class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded transition">
+          Publicar +1 al counter
+        </button>
+      </div>
+      <div 
+        on-publish="notification::html"
+        class="bg-indigo-50 border border-indigo-200 rounded p-4 text-indigo-700 min-h-[3rem]">
+        Esperando notificaciones...
+      </div>
+    </section>
+
+    <!-- Sección 7: Condicionales con @if -->
+    <section class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
+        <i data-icon="user" class="size-5"></i> Condicionales
+      </h2>
+      <p class="text-gray-600 mb-2">
+        El contador actual es: <span data-bind="text:counter" class="font-bold"></span>
+      </p>
+      <div data-bind="html:counterStatus" class="mt-2 p-3 rounded border"></div>
+    </section>
+
+  </div>
+
+
+
+</body>
+
+</html>
