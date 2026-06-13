@@ -13,7 +13,7 @@
   </script>
   <script src="js/icons.js"></script>
   <script src="js/vanilla-reactive.iife.js"></script>
-  <script src="js/app-components/theme-toggle-component.js"></script>
+  <script src="js/app-components-bundle.js"></script>
 
   <style>
     body { visibility: hidden; }
@@ -108,25 +108,32 @@
 
 </head>
 
-<body class="bg-gray-100 dark:bg-gray-900 min-h-screen py-8 transition-colors">
-  <div class="max-w-4xl mx-auto space-y-8">
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors">
+  <div class="max-w-4xl mx-auto space-y-8 px-4">
 
-    <header class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <header>
+
+      <div data-component="header-component"></div>
+
       <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">
-        <i data-icon="zap" class="size-10 inline-flex"></i> 
-              Playground - VanillaReactive
+        <i data-icon="layers" class="size-10 inline-flex"></i> 
+        Home
       </h1>
-      <p class="text-gray-500 dark:text-gray-400 mt-2">Páginas de prueba para la librería reactiva (cargada como IIFE)</p>
-      <div data-component="theme-toggle-component"></div>
-      <nav class="mt-4 flex gap-3">
-        <a href="counter.html" class="text-blue-600 dark:text-blue-400 hover:underline">Counter</a>
-        <a href="todo.html" class="text-blue-600 dark:text-blue-400 hover:underline">Todo List</a>
-      </nav>
+      <p class="text-gray-500 dark:text-gray-400 mt-2 border border-gray-200 dark:border-gray-700 rounded p-4">
+        Página de inicio del playground. Aquí se muestran ejemplos de las funcionalidades 
+        principales del framework, incluyendo interpolación, directivas, eventos y PubSub. 
+        Navega a las otras páginas para ver ejemplos específicos de cada funcionalidad en acción.
+      </p>
+      
     </header>
+
+    <nav class="mt-4 flex gap-3">
+      <a href="counter.html" class="text-blue-600 dark:text-blue-400 hover:underline">Counter</a>
+      <a href="todo.html" class="text-blue-600 dark:text-blue-400 hover:underline">Todo List</a>
+    </nav>
 
     <section class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
       <div data-component="clock-component"></div>
-      <div data-component="theme-toggle-component"></div>
     </section>
 
     <section class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">

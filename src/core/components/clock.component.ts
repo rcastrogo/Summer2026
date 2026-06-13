@@ -20,10 +20,17 @@ export class ClockComponent extends BaseComponent {
     const { on } = this._state;
 
     const view = build('div', `
-      <div class="rounded-lg p-1.5 border bg-background">
-        <div class="flex items-center gap-3 mx-1">
-          <i data-icon="timer" class="size-6 hidden lg:block"></i>
-          <span class="font-mono text-slate-700 dark:text-slate-100" id="date-slot">
+      <div class="
+        bg-background
+        relative flex items-center gap-2 px-3 py-2 rounded-md border
+        border-gray-300 dark:border-slate-600
+        bg-white dark:bg-gray-800
+        text-gray-700 dark:text-gray-200
+        transition-colors
+        ">
+        <div class="flex items-center gap-2">
+          <i data-icon="timer" class="size-5 hidden lg:block dark:text-yellow-400 text-indigo-500"></i>
+          <span class="font-mono text-sm text-slate-700 dark:text-slate-100" id="date-slot">
             --:--:--
           </span>
         </div>

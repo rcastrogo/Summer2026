@@ -1,61 +1,62 @@
 import { ClockComponent } from './components/clock.component';
-import { registerComponent } from './hydrate';
-import { registerIcons } from './icons';
 
+// =============================================================================
+// ROOT EXPORTS - API principal (lo más usado por los componentes)
+// =============================================================================
+export { BaseComponent } from './types';
+export type {
+  Component,
+  ComponentContext,
+  ComponentConstructor,
+  ComponentFactory,
+  ComponentCreator,
+  ComponentBinding, 
+  BindingResolver, 
+  PublishContext, 
+  CleanupFn
+} from './types';
+export { buildAndInterpolate } from './dom';
+export { registerComponent, hydrateElement, resolveBindingValue } from './hydrate';
+export { pubSub } from './services/pubsub.service';
+export { initApp } from './initApp';
 
-export * from './utils'
-export * from './types';
+// =============================================================================
+// NAMESPACES - API agrupada por dominio
+// =============================================================================
+import * as _dom from './dom';
+import * as _hydrate from './hydrate';
+import * as _template from './template';
+import * as _utils from './utils';
+import * as _icons from './icons';
+import * as _state from './state.utils';
+import { storage } from './storageUtil';
+import { RQ } from './services/http-client.service';
+import { pubSub } from './services/pubsub.service';
 
-export {registerIcons, createIcon} from './icons';
-export {useState} from './state.utils';
-export {storage} from './storageUtil';
-export {
-  registerComponent, 
-  getComponent, 
-  resolveBindingValue,
-  hydrateElement,
-} from './hydrate';
-export * from './dom';
+/** DOM utilities: build, buildAndInterpolate, $ */
+export const dom = _dom;
 
-export {RQ} from './services/http-client.service';
-export {pubSub} from './services/pubsub.service';
+/** Hydration: hydrateElement, hydrateComponents, hydrateIcons, etc. */
+export const hydrate = _hydrate;
 
-type InitCallback = () => void;
+/** Template interpolation engine */
+export const template = _template;
 
-export function initApp(callbacks?: InitCallback | InitCallback[]): void {
-  const execute = () => {
-    // ========================================================================================
-    // Register icons if lucideIcons is available in the global scope.
-    // This allows users to include lucide icons via CDN and have them registered automatically.
-    // ========================================================================================
-    if ('lucideIcons' in window) registerIcons(window.lucideIcons as Record<string, string>);
-    // ========================================================================================
-    // Register internal components. This is where you would register any core components that 
-    // are part of the library.
-    // ========================================================================================
-    registerComponent('clock-component', ClockComponent);
+/** Utility functions: debounce, clone, getValueByPath, etc. */
+export const utils = _utils;
 
-    const fns = callbacks
-      ? Array.isArray(callbacks) ? callbacks : [callbacks]
-      : [];
-    fns.forEach(fn => fn());
-    document.body.style.visibility = 'visible';
-  };
+/** Icon registration and creation */
+export const icons = _icons;
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', execute, { once: true });
-  } else {
-    execute();
-  }
-  // ===========================================================================================
-  // Set initial theme based on user preference or system settings.
-  // This is done immediately to prevent a flash of unstyled content (FOUC) when the page loads.
-  // ===========================================================================================
-  const theme = localStorage.getItem('theme');
-  const isDark = theme === 'dark' ||  (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);   
-  if (isDark) document.documentElement.classList.add('dark');
-}
+/** State management: useState, storage */
+export const state = { ..._state, storage };
 
+/** HTTP client and PubSub */
+export const services = { RQ, pubSub } as { RQ: typeof RQ; pubSub: typeof pubSub };
+
+// =============================================================================
+// Components registry (internal components bundled with the lib)
+// =============================================================================
 export const Components = {
   ClockComponent,
 } as const;
