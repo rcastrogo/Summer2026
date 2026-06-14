@@ -1,39 +1,21 @@
-var F = Object.defineProperty, y = (e, t) => {
+var D = Object.defineProperty, y = (e, t) => {
   let n = {};
   for (var r in e)
-    F(n, r, {
+    D(n, r, {
       get: e[r],
       enumerable: !0
     });
-  return t || F(n, Symbol.toStringTag, { value: "Module" }), n;
-}, te = /* @__PURE__ */ y({
-  createIcon: () => $,
-  registerIcons: () => H
-}), D = {};
-function H(e) {
-  for (const [t, n] of Object.entries(e)) D[t] = n;
-}
-function $(e, t = "w-6 h-6") {
-  const n = D[e] || "";
-  if (n) {
-    const r = document.createElement("div");
-    r.innerHTML = n;
-    const s = r.firstElementChild;
-    if (s)
-      return s.setAttribute("class", t), s;
-  }
-  return e;
-}
-var ne = /* @__PURE__ */ y({
-  decodeHTMLEntities: () => V,
-  evaluateExpression: () => R,
-  getValue: () => p,
-  interpolate: () => q,
-  preProcessTemplate: () => O,
+  return t || D(n, Symbol.toStringTag, { value: "Module" }), n;
+}, ne = /* @__PURE__ */ y({
+  decodeHTMLEntities: () => U,
+  evaluateExpression: () => q,
+  getValue: () => h,
+  interpolate: () => W,
+  preProcessTemplate: () => I,
   resolveArgs: () => S,
-  safeAttribute: () => U,
-  safeInnerHTML: () => B
-}), W = {
+  safeAttribute: () => B,
+  safeInnerHTML: () => R
+}), H = {
   if: (e, t) => e === void 0 ? void 0 : e ? t : "",
   show: (e) => e === void 0 ? void 0 : e ? "" : "display: none",
   hide: (e) => e === void 0 ? void 0 : e ? "display: none" : "",
@@ -65,41 +47,41 @@ var ne = /* @__PURE__ */ y({
     return console.log("Valor actual:", e), console.log("Scope completo:", this), e;
   },
   safeHTML: function(e) {
-    return B(e);
+    return R(e);
   },
   safeAttribute: function(e) {
-    return U(e);
+    return B(e);
   }
 };
 function re(e, t) {
   try {
-    return t && e in t || e in W || e in self || t && t["#"];
+    return t && e in t || e in H || e in self || t && t["#"];
   } catch {
     return !1;
   }
 }
-function p(e, t) {
+function h(e, t) {
   if (!e || e === "this") return t;
   const n = e.split("|").map((a) => a.trim()), r = n.shift() || "", s = n;
   if (r.startsWith("t:")) {
     const [a, ...c] = r.slice(2).split(":");
-    return s.unshift("t"), s[0] += ":" + c.join(":"), A(s, a, t);
+    return s.unshift("t"), s[0] += ":" + c.join(":"), C(s, a, t);
   }
   if (r.startsWith("'") && r.endsWith("'")) {
     const [a, ...c] = r.slice(1, -1).split(":");
-    return s.unshift("t"), s[0] += ":" + c.join(":"), A(s, a, t);
+    return s.unshift("t"), s[0] += ":" + c.join(":"), C(s, a, t);
   }
-  const o = ((r || "").replace(/{([^{}]+)}/g, (a, c) => p(c.trim(), t)) || "").split(/\.|\[|\]/).filter((a) => a !== "");
+  const o = ((r || "").replace(/{([^{}]+)}/g, (a, c) => h(c.trim(), t)) || "").split(/\.|\[|\]/).filter((a) => a !== "");
   let i = t || self;
   if (re(o[0] || "", t)) {
     for (const a of o) if (i !== null && typeof i == "object" && a in i) i = i[a];
-    else if (i && i["#"]) i = p(a, i["#"]);
+    else if (i && i["#"]) i = h(a, i["#"]);
     else if (a in self) i = self[a];
     else {
       i = void 0;
       break;
     }
-    return A(s, i, t);
+    return C(s, i, t);
   }
 }
 function se(e, t) {
@@ -112,20 +94,20 @@ function se(e, t) {
   }
   return n.push(r.trim()), n;
 }
-function A(e, t, n) {
+function C(e, t, n) {
   return e.reduce((r, s) => {
-    const [o, ...i] = se(s, ":"), a = p(o, n) || W[o || ""];
+    const [o, ...i] = se(s, ":"), a = h(o, n) || H[o || ""];
     if (typeof a == "function") {
-      const c = i.map((l) => l.startsWith("'") && l.endsWith("'") ? l.slice(1, -1) : l.startsWith("@") ? p(l.slice(1), n) : l);
+      const c = i.map((l) => l.startsWith("'") && l.endsWith("'") ? l.slice(1, -1) : l.startsWith("@") ? h(l.slice(1), n) : l);
       return a.apply(n, [r, ...c]);
     }
     return console.warn(`Filtro "${o}" no encontrado.`), r;
   }, t);
 }
-function q(e, t) {
-  return O(e, t).replace(/{([^{}]+)}/g, (n, r) => {
+function W(e, t) {
+  return I(e, t).replace(/{([^{}]+)}/g, (n, r) => {
     try {
-      const s = p(r.trim(), t);
+      const s = h(r.trim(), t);
       return typeof s == "function" ? s.apply(t) : s != null ? String(s) : n;
     } catch (s) {
       return console.error(String(s), n), n;
@@ -136,9 +118,9 @@ function S(e, t) {
   return e.map((n) => {
     if (n.startsWith("$")) {
       const o = n.slice(1);
-      return t.state ? p(o, t.state) : void 0;
+      return t.state ? h(o, t.state) : void 0;
     }
-    if (n.startsWith("@")) return p(n.slice(1), t);
+    if (n.startsWith("@")) return h(n.slice(1), t);
     const r = n.toLowerCase();
     if (r === "true") return !0;
     if (r === "false") return !1;
@@ -148,7 +130,7 @@ function S(e, t) {
     return n.trim() !== "" && !isNaN(s) ? s : n;
   });
 }
-function R(e, t) {
+function q(e, t) {
   try {
     return new Function("ctx", `
       with(ctx) {
@@ -165,7 +147,7 @@ function R(e, t) {
     return console.log(n || "evaluateExpression", e, t), !1;
   }
 }
-function O(e, t) {
+function I(e, t) {
   if (!e.includes("@if")) return e;
   let n = 0, r = "";
   for (; n < e.length; ) if (e.startsWith("@if(", n)) {
@@ -179,8 +161,8 @@ function O(e, t) {
       r += e[n], n++;
       continue;
     }
-    const l = e.slice(a, c), u = R(V(i), t);
-    u === "__UNDEFINED__" ? r += `@if(${i})${l}@endif` : u && (r += O(l, t)), n = c + 6;
+    const l = e.slice(a, c), u = q(U(i), t);
+    u === "__UNDEFINED__" ? r += `@if(${i})${l}@endif` : u && (r += I(l, t)), n = c + 6;
   } else
     r += e[n], n++;
   return r;
@@ -204,14 +186,14 @@ function ie(e, t, n, r) {
     if (e[o] === n ? s++ : e[o] === r && s--, s === 0) return o;
   return -1;
 }
-function B(e) {
+function R(e) {
   const t = document.createElement("div");
   return t.textContent = e, t.innerHTML;
 }
-function U(e) {
+function B(e) {
   return String(e).replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("'", "&#39;");
 }
-function V(e) {
+function U(e) {
   const t = {
     "&amp;": "&",
     "&lt;": "<",
@@ -222,7 +204,99 @@ function V(e) {
   };
   return e.replace(/&amp;|&lt;|&gt;|&quot;|&#39;|&nbsp;/g, (n) => t[n || ""] || n);
 }
-var ae = class {
+var ae = /* @__PURE__ */ y({
+  $: () => le,
+  build: () => w,
+  buildAndInterpolate: () => V,
+  getQueryParams: () => ce,
+  setupFocusTrap: () => ue
+});
+function w(e, t = {}, n = !1, r) {
+  const s = document.createElement(e);
+  if (typeof t == "string") {
+    if (!t.trim()) return s;
+    s.innerHTML = t;
+  } else {
+    const { className: o, ...i } = t;
+    if (Object.assign(s, i), o && (s.className = o), r && "slottedNodes" in r) {
+      const a = r.slottedNodes;
+      for (const [c, l] of Object.entries(a)) {
+        const u = s.querySelector(`slot[name="${c}"]`);
+        if (u) {
+          const f = u.parentElement;
+          for (const d of l) d instanceof Node && f.insertBefore(d, u);
+          u.remove();
+        }
+      }
+    }
+  }
+  return r && A(s, r), k(s), r && x(r, F(s, r)), r && j(s, r), n && s.firstElementChild || s;
+}
+function V(e, t = {}, n = !0, r = {}) {
+  const s = W(e, t);
+  return w("div", {
+    ...r,
+    innerHTML: s
+  }, n, t);
+}
+function le(e, t) {
+  return {
+    one: () => (t || document).querySelector(e),
+    all: () => Array.from((t || document).querySelectorAll(e)),
+    exists: () => (t || document).querySelector(e) !== null
+  };
+}
+function ce() {
+  const e = new URLSearchParams(window.location.search);
+  return Object.fromEntries(e.entries());
+}
+function ue(e) {
+  if (!e) return;
+  const t = [
+    "a[href]",
+    "button:not([disabled])",
+    "textarea:not([disabled])",
+    "input:not([disabled])",
+    "select:not([disabled])",
+    '[tabindex]:not([tabindex="-1"])',
+    "[contenteditable]",
+    "iframe"
+  ].join(", "), n = () => {
+    const o = e.querySelectorAll(t);
+    return Array.from(o).filter((i) => i.offsetWidth > 0 || i.offsetHeight > 0 || i.getClientRects().length > 0);
+  }, r = (o) => {
+    if (o.key !== "Tab") return;
+    const i = n();
+    if (i.length === 0) {
+      o.preventDefault();
+      return;
+    }
+    const a = i[0], c = i[i.length - 1], l = document.activeElement;
+    !o.shiftKey && l === c ? (a?.focus(), o.preventDefault()) : o.shiftKey && (l === a || !e.contains(l)) && (c?.focus(), o.preventDefault());
+  }, s = n();
+  return s.length > 0 && s[0]?.focus(), window.addEventListener("keydown", r, !0), function() {
+    window.removeEventListener("keydown", r, !0);
+  };
+}
+var fe = /* @__PURE__ */ y({
+  createIcon: () => J,
+  registerIcons: () => K
+}), z = {};
+function K(e) {
+  for (const [t, n] of Object.entries(e)) z[t] = n;
+}
+function J(e, t = "w-6 h-6") {
+  const n = z[e] || "";
+  if (n) {
+    const r = document.createElement("div");
+    r.innerHTML = n;
+    const s = r.firstElementChild;
+    if (s)
+      return s.setAttribute("class", t), s;
+  }
+  return e;
+}
+var de = class {
   topics = /* @__PURE__ */ new Map();
   GLOBAL_SCOPE = /* @__PURE__ */ Symbol("global");
   getScopeKey(e) {
@@ -248,7 +322,223 @@ var ae = class {
       s !== this.GLOBAL_SCOPE ? r.get(s)?.forEach((o) => o(t)) : r.forEach((o) => o.forEach((i) => i(t)));
     });
   }
-}, b = new ae(), z = class N {
+}, b = new de(), pe = /* @__PURE__ */ y({
+  getComponent: () => he,
+  getHydrationPromise: () => G,
+  getResolver: () => Q,
+  hydrateComponents: () => F,
+  hydrateDirectives: () => A,
+  hydrateElement: () => ge,
+  hydrateEventListeners: () => j,
+  hydrateIcons: () => k,
+  registerComponent: () => _,
+  resolveBindingValue: () => E,
+  trackHydration: () => x
+}), M = /* @__PURE__ */ new Map();
+function _(e, t) {
+  M.set(e, t);
+}
+function he(e) {
+  return M.get(e);
+}
+function me(e) {
+  return e.prototype && e.prototype.constructor === e;
+}
+var T = /* @__PURE__ */ new WeakMap();
+function x(e, t) {
+  const n = T.get(e);
+  T.set(e, n ? n.then(() => t) : t);
+}
+function G(e) {
+  return T.get(e) || Promise.resolve();
+}
+function ge(e, t) {
+  k(e), j(e, t), F(e, t), A(e, t);
+}
+function k(e = document.body) {
+  return e.querySelectorAll("[data-icon]").forEach((t) => {
+    const n = t.dataset.icon, r = t.className, s = J(n, r);
+    s && t.replaceWith(s);
+  }), e;
+}
+function j(e, t) {
+  const n = document.createTreeWalker(e, NodeFilter.SHOW_ELEMENT);
+  let r = e;
+  for (t.bindings || (t.bindings = []); r; ) {
+    const s = r;
+    Array.from(s.attributes).forEach((o) => {
+      const i = o.name, a = o.value;
+      if (i === "on-publish") {
+        const [c, l, u, ...f] = a.split(":"), d = l === "local" ? t.instanceId : void 0, p = b.subscribe(c, (m) => {
+          const g = m && typeof m == "object" && "args" in m ? m.args[0] : m;
+          switch ((u || "").toLowerCase()) {
+            case "classname":
+              s.className = g;
+              break;
+            case "html":
+            case "innerhtml":
+              s.innerHTML = g;
+              break;
+            case "json":
+              s.innerHTML = JSON.stringify(h(g, t), null, 2);
+              break;
+            case "style":
+              s.style[f[0] || ""] = g;
+              break;
+            case "toggleclass":
+              s.classList.toggle(f[0] || "");
+              break;
+            default:
+              if (u && typeof t[u] == "function") t[u].call(t, s, m, ...f);
+              else if (u && u.startsWith("attr.")) {
+                const v = u.split(".")[1], te = g;
+                v && s.setAttribute(v, te);
+              } else s.innerHTML = h(g, t);
+          }
+        }, d);
+        t.component && t.component.addCleanup(p), s.removeAttribute(i);
+      } else if (i.startsWith("on-")) {
+        const c = i.replace("on-", "");
+        if (a.startsWith("publish")) {
+          const [, l, u, ...f] = a.split(":");
+          if (!l) {
+            console.warn("Falta el topic en el publish:", a);
+            return;
+          }
+          const d = u === "local" ? t.instanceId : void 0;
+          s.addEventListener(c, (p) => {
+            const m = f.length > 0 ? S(f, t) : [];
+            b.publish(l, {
+              event: p,
+              target: s,
+              args: m
+            }, d);
+          });
+        } else {
+          const [l, ...u] = a.split(":"), f = t[l || ""] || t.handlers?.[l || ""];
+          if (typeof f == "function") {
+            const d = S(u, t);
+            s.addEventListener(c, (p) => {
+              f.call(t, s, p, ...d);
+            });
+          }
+        }
+        s.removeAttribute(i);
+      } else i === "data-bind" && (a.split(";").map((c) => c.trim()).filter(Boolean).forEach((c) => {
+        const [l = "", ...u] = c.split(":").map((v) => v.trim()), f = u.join(":"), d = S(u, t), [p, m] = l.includes(".") ? l.split(".") : [l, null], g = {
+          element: s,
+          type: p,
+          prop: m,
+          path: f,
+          params: d
+        };
+        t.bindings.push(g), E(g, t);
+      }), s.removeAttribute(i));
+    }), r = n.nextNode();
+  }
+  return e;
+}
+async function F(e, t) {
+  const n = e.querySelectorAll("[data-component]");
+  for (const r of Array.from(n)) {
+    const s = r.dataset.component;
+    if (!s) continue;
+    const o = M.get(s);
+    if (!o) {
+      console.error(`Componente ${s} no encontrado en el registro.`);
+      continue;
+    }
+    const i = me(o) ? new o(t) : o(t);
+    r.removeAttribute("data-component");
+    const a = r.className.trim();
+    i.init?.({ parent: r });
+    const c = i.render();
+    if (c && ($.bind(i, c), c.id || c.setAttribute("id", r.id), c.setAttribute(s, ""), a)) {
+      const l = a.split(/\s+/).filter((u) => u.length > 0);
+      c.classList.add(...l);
+    }
+    r.replaceWith(c || document.createComment(`Component ${s} rendered an empty element`)), i.mounted?.();
+  }
+}
+function A(e, t) {
+  e.querySelectorAll("[data-t]").forEach((n) => {
+    const r = n.dataset.t, s = r.startsWith("t:") ? r.slice(2) : r;
+    n.setAttribute("data-i18n-key", s);
+  }), Array.from(e.querySelectorAll("[data-each]")).filter((n) => !n.parentElement?.closest("[data-each]")).forEach((n) => {
+    const [r, , ...s] = n.dataset.each.split(" "), o = s.join(" ").trim();
+    let i = [];
+    if (o.startsWith("[") && o.endsWith("]")) try {
+      i = JSON.parse(o.replace(/'/g, '"'));
+    } catch (l) {
+      console.error("Error parseando array estático en data-each:", l);
+    }
+    else i = h(o, t) || [];
+    const a = n.innerHTML.replaceAll("~", "|");
+    if (n.innerHTML = "", n.removeAttribute("data-each"), i.length === 0) {
+      n.appendChild(document.createComment(`anchor:each-${o}`));
+      return;
+    }
+    const c = document.createDocumentFragment();
+    i.forEach((l, u) => {
+      if (l instanceof Node) {
+        c.appendChild(l);
+        return;
+      }
+      const f = Object.create(t);
+      f[r || ""] = l, f.index = u, f["#"] = t;
+      const d = V(a, f, !1);
+      for (ye(d, f), A(d, f); d.firstChild; ) c.appendChild(d.firstChild);
+    }), n.appendChild(c);
+  });
+}
+function Q(e) {
+  const { type: t, prop: n, params: r } = e, s = {
+    fn: (o, i) => {
+      typeof i == "function" ? i(o, r?.slice(1)) : console.warn(`La función '${e.path}' no se encontró en el contexto.`);
+    },
+    text: (o, i) => o.innerText = i ?? "",
+    html: (o, i) => o.innerHTML = i ?? "",
+    value: (o, i) => {
+      const a = o.__instance;
+      a ? a.setProp?.("value", i) : o.value = i ?? "";
+    },
+    checked: (o, i) => o.checked = !!i,
+    attr: (o, i) => i == null ? o.removeAttribute(n) : o.setAttribute(n, String(i)),
+    class: (o, i) => o.className = i ?? "",
+    toggle: (o, i) => o.classList.toggle(n, !!i),
+    style: (o, i) => o.style[n] = i,
+    show: (o, i) => o.style.display = i ? "" : "none",
+    hide: (o, i) => o.style.display = i ? "none" : "",
+    disabled: (o, i) => o.disabled = !!i
+  };
+  return s[t] || s.text || (() => {
+  });
+}
+function ye(e, t) {
+  e.firstElementChild && (e.firstElementChild.__localCtx__ = t);
+}
+function be(e) {
+  let t = e;
+  for (; t; ) {
+    const n = t.__localCtx__;
+    if (n) return n;
+    t = t.parentElement;
+  }
+  return null;
+}
+function E(e, t) {
+  const n = Q(e);
+  let r = e.path;
+  e.type === "fn" && e.params && e.params.length > 0 && (r = e.params[0]);
+  const s = h(r, t);
+  if (s !== void 0) {
+    n(e.element, s);
+    return;
+  }
+  const o = be(e.element), i = h(r, o);
+  n(e.element, i);
+}
+var $ = class L {
   static instance = 0;
   element = null;
   instanceId = 0;
@@ -261,7 +551,7 @@ var ae = class {
   cleanups = [];
   isInitializing = !1;
   constructor(t) {
-    this.parsePropsAndChildren(t), this.instanceId = ++N.instance, this.bindMethods(), this.ctx = t, this.state = new Proxy({}, { set: (n, r, s) => (n[r] = s, this.isInitializing || this.update(r), !0) });
+    this.parsePropsAndChildren(t), this.instanceId = ++L.instance, this.bindMethods(), this.ctx = t, this.state = new Proxy({}, { set: (n, r, s) => (n[r] = s, this.isInitializing || this.update(r), !0) });
   }
   setState(t, n = !0) {
     this.isInitializing = !0, Object.assign(this.state, t), this.isInitializing = !1, n && this.update("state");
@@ -320,14 +610,14 @@ var ae = class {
       const i = o.name.slice(1, -1).replace(/-([a-z])/g, (f, d) => d.toUpperCase()), a = o.value.trim(), c = a.match(/^([\w\\.]+)\[(.+)\]$/);
       let l;
       if (c) {
-        const [, f, d] = c, h = p(f, s);
+        const [, f, d] = c, p = h(f, s);
         l = {
-          Map: () => h.get(d),
-          Set: () => Array.from(h)[Number(d)],
-          Default: () => h?.[d || ""]
-        }[h instanceof Map ? "Map" : h instanceof Set ? "Set" : "Default"]();
+          Map: () => p.get(d),
+          Set: () => Array.from(p)[Number(d)],
+          Default: () => p?.[d || ""]
+        }[p instanceof Map ? "Map" : p instanceof Set ? "Set" : "Default"]();
       }
-      const u = l || s[a] || p(a, s);
+      const u = l || s[a] || h(a, s);
       if (typeof u == "function") {
         r[i] = u.bind(this.ctx), this.addCleanup(() => {
           r[i] = void 0;
@@ -358,299 +648,9 @@ var ae = class {
     return G(this);
   }
   bind(t) {
-    return N.bind(this, t);
+    return L.bind(this, t);
   }
-}, le = /* @__PURE__ */ y({
-  getComponent: () => ce,
-  getHydrationPromise: () => G,
-  getResolver: () => x,
-  hydrateComponents: () => k,
-  hydrateDirectives: () => w,
-  hydrateElement: () => fe,
-  hydrateEventListeners: () => M,
-  hydrateIcons: () => I,
-  registerComponent: () => K,
-  resolveBindingValue: () => E,
-  trackHydration: () => J
-}), P = /* @__PURE__ */ new Map();
-function K(e, t) {
-  P.set(e, t);
-}
-function ce(e) {
-  return P.get(e);
-}
-function ue(e) {
-  return e.prototype && e.prototype.constructor === e;
-}
-var _ = /* @__PURE__ */ new WeakMap();
-function J(e, t) {
-  const n = _.get(e);
-  _.set(e, n ? n.then(() => t) : t);
-}
-function G(e) {
-  return _.get(e) || Promise.resolve();
-}
-function fe(e, t) {
-  I(e), M(e, t), k(e, t), w(e, t);
-}
-function I(e = document.body) {
-  return e.querySelectorAll("[data-icon]").forEach((t) => {
-    const n = t.dataset.icon, r = t.className, s = $(n, r);
-    s && t.replaceWith(s);
-  }), e;
-}
-function M(e, t) {
-  const n = document.createTreeWalker(e, NodeFilter.SHOW_ELEMENT);
-  let r = e;
-  for (t.bindings || (t.bindings = []); r; ) {
-    const s = r;
-    Array.from(s.attributes).forEach((o) => {
-      const i = o.name, a = o.value;
-      if (i === "on-publish") {
-        const [c, l, u, ...f] = a.split(":"), d = l === "local" ? t.instanceId : void 0, h = b.subscribe(c, (m) => {
-          const g = m && typeof m == "object" && "args" in m ? m.args[0] : m;
-          switch ((u || "").toLowerCase()) {
-            case "classname":
-              s.className = g;
-              break;
-            case "html":
-            case "innerhtml":
-              s.innerHTML = g;
-              break;
-            case "json":
-              s.innerHTML = JSON.stringify(p(g, t), null, 2);
-              break;
-            case "style":
-              s.style[f[0] || ""] = g;
-              break;
-            case "toggleclass":
-              s.classList.toggle(f[0] || "");
-              break;
-            default:
-              if (u && typeof t[u] == "function") t[u].call(t, s, m, ...f);
-              else if (u && u.startsWith("attr.")) {
-                const v = u.split(".")[1], ee = g;
-                v && s.setAttribute(v, ee);
-              } else s.innerHTML = p(g, t);
-          }
-        }, d);
-        t.component && t.component.addCleanup(h), s.removeAttribute(i);
-      } else if (i.startsWith("on-")) {
-        const c = i.replace("on-", "");
-        if (a.startsWith("publish")) {
-          const [, l, u, ...f] = a.split(":");
-          if (!l) {
-            console.warn("Falta el topic en el publish:", a);
-            return;
-          }
-          const d = u === "local" ? t.instanceId : void 0;
-          s.addEventListener(c, (h) => {
-            const m = f.length > 0 ? S(f, t) : [];
-            b.publish(l, {
-              event: h,
-              target: s,
-              args: m
-            }, d);
-          });
-        } else {
-          const [l, ...u] = a.split(":"), f = t[l || ""] || t.handlers?.[l || ""];
-          if (typeof f == "function") {
-            const d = S(u, t);
-            s.addEventListener(c, (h) => {
-              f.call(t, s, h, ...d);
-            });
-          }
-        }
-        s.removeAttribute(i);
-      } else i === "data-bind" && (a.split(";").map((c) => c.trim()).filter(Boolean).forEach((c) => {
-        const [l = "", ...u] = c.split(":").map((v) => v.trim()), f = u.join(":"), d = S(u, t), [h, m] = l.includes(".") ? l.split(".") : [l, null], g = {
-          element: s,
-          type: h,
-          prop: m,
-          path: f,
-          params: d
-        };
-        t.bindings.push(g), E(g, t);
-      }), s.removeAttribute(i));
-    }), r = n.nextNode();
-  }
-  return e;
-}
-async function k(e, t) {
-  const n = e.querySelectorAll("[data-component]");
-  for (const r of Array.from(n)) {
-    const s = r.dataset.component;
-    if (!s) continue;
-    const o = P.get(s);
-    if (!o) {
-      console.error(`Componente ${s} no encontrado en el registro.`);
-      continue;
-    }
-    const i = ue(o) ? new o(t) : o(t);
-    r.removeAttribute("data-component");
-    const a = r.className.trim();
-    i.init?.({ parent: r });
-    const c = i.render();
-    if (c && (z.bind(i, c), c.id || c.setAttribute("id", r.id), c.setAttribute(s, ""), a)) {
-      const l = a.split(/\s+/).filter((u) => u.length > 0);
-      c.classList.add(...l);
-    }
-    r.replaceWith(c || document.createComment(`Component ${s} rendered an empty element`)), i.mounted?.();
-  }
-}
-function w(e, t) {
-  e.querySelectorAll("[data-t]").forEach((n) => {
-    const r = n.dataset.t, s = r.startsWith("t:") ? r.slice(2) : r;
-    n.setAttribute("data-i18n-key", s);
-  }), Array.from(e.querySelectorAll("[data-each]")).filter((n) => !n.parentElement?.closest("[data-each]")).forEach((n) => {
-    const [r, , ...s] = n.dataset.each.split(" "), o = s.join(" ").trim();
-    let i = [];
-    if (o.startsWith("[") && o.endsWith("]")) try {
-      i = JSON.parse(o.replace(/'/g, '"'));
-    } catch (l) {
-      console.error("Error parseando array estático en data-each:", l);
-    }
-    else i = p(o, t) || [];
-    const a = n.innerHTML.replaceAll("~", "|");
-    if (n.innerHTML = "", n.removeAttribute("data-each"), i.length === 0) {
-      n.appendChild(document.createComment(`anchor:each-${o}`));
-      return;
-    }
-    const c = document.createDocumentFragment();
-    i.forEach((l, u) => {
-      if (l instanceof Node) {
-        c.appendChild(l);
-        return;
-      }
-      const f = Object.create(t);
-      f[r || ""] = l, f.index = u, f["#"] = t;
-      const d = Q(a, f, !1);
-      for (de(d, f), w(d, f); d.firstChild; ) c.appendChild(d.firstChild);
-    }), n.appendChild(c);
-  });
-}
-function x(e) {
-  const { type: t, prop: n, params: r } = e, s = {
-    fn: (o, i) => {
-      typeof i == "function" ? i(o, r?.slice(1)) : console.warn(`La función '${e.path}' no se encontró en el contexto.`);
-    },
-    text: (o, i) => o.innerText = i ?? "",
-    html: (o, i) => o.innerHTML = i ?? "",
-    value: (o, i) => {
-      const a = o.__instance;
-      a ? a.setProp?.("value", i) : o.value = i ?? "";
-    },
-    checked: (o, i) => o.checked = !!i,
-    attr: (o, i) => i == null ? o.removeAttribute(n) : o.setAttribute(n, String(i)),
-    class: (o, i) => o.className = i ?? "",
-    toggle: (o, i) => o.classList.toggle(n, !!i),
-    style: (o, i) => o.style[n] = i,
-    show: (o, i) => o.style.display = i ? "" : "none",
-    hide: (o, i) => o.style.display = i ? "none" : "",
-    disabled: (o, i) => o.disabled = !!i
-  };
-  return s[t] || s.text || (() => {
-  });
-}
-function de(e, t) {
-  e.firstElementChild && (e.firstElementChild.__localCtx__ = t);
-}
-function he(e) {
-  let t = e;
-  for (; t; ) {
-    const n = t.__localCtx__;
-    if (n) return n;
-    t = t.parentElement;
-  }
-  return null;
-}
-function E(e, t) {
-  const n = x(e);
-  let r = e.path;
-  e.type === "fn" && e.params && e.params.length > 0 && (r = e.params[0]);
-  const s = p(r, t);
-  if (s !== void 0) {
-    n(e.element, s);
-    return;
-  }
-  const o = he(e.element), i = p(r, o);
-  n(e.element, i);
-}
-var pe = /* @__PURE__ */ y({
-  $: () => me,
-  build: () => j,
-  buildAndInterpolate: () => Q,
-  getQueryParams: () => ge,
-  setupFocusTrap: () => ye
-});
-function j(e, t = {}, n = !1, r) {
-  const s = document.createElement(e);
-  if (typeof t == "string") {
-    if (!t.trim()) return s;
-    s.innerHTML = t;
-  } else {
-    const { className: o, ...i } = t;
-    if (Object.assign(s, i), o && (s.className = o), r && "slottedNodes" in r) {
-      const a = r.slottedNodes;
-      for (const [c, l] of Object.entries(a)) {
-        const u = s.querySelector(`slot[name="${c}"]`);
-        if (u) {
-          const f = u.parentElement;
-          for (const d of l) d instanceof Node && f.insertBefore(d, u);
-          u.remove();
-        }
-      }
-    }
-  }
-  return r && w(s, r), I(s), r && J(r, k(s, r)), r && M(s, r), n && s.firstElementChild || s;
-}
-function Q(e, t = {}, n = !0, r = {}) {
-  const s = q(e, t);
-  return j("div", {
-    ...r,
-    innerHTML: s
-  }, n, t);
-}
-function me(e, t) {
-  return {
-    one: () => (t || document).querySelector(e),
-    all: () => Array.from((t || document).querySelectorAll(e)),
-    exists: () => (t || document).querySelector(e) !== null
-  };
-}
-function ge() {
-  const e = new URLSearchParams(window.location.search);
-  return Object.fromEntries(e.entries());
-}
-function ye(e) {
-  if (!e) return;
-  const t = [
-    "a[href]",
-    "button:not([disabled])",
-    "textarea:not([disabled])",
-    "input:not([disabled])",
-    "select:not([disabled])",
-    '[tabindex]:not([tabindex="-1"])',
-    "[contenteditable]",
-    "iframe"
-  ].join(", "), n = () => {
-    const o = e.querySelectorAll(t);
-    return Array.from(o).filter((i) => i.offsetWidth > 0 || i.offsetHeight > 0 || i.getClientRects().length > 0);
-  }, r = (o) => {
-    if (o.key !== "Tab") return;
-    const i = n();
-    if (i.length === 0) {
-      o.preventDefault();
-      return;
-    }
-    const a = i[0], c = i[i.length - 1], l = document.activeElement;
-    !o.shiftKey && l === c ? (a?.focus(), o.preventDefault()) : o.shiftKey && (l === a || !e.contains(l)) && (c?.focus(), o.preventDefault());
-  }, s = n();
-  return s.length > 0 && s[0]?.focus(), window.addEventListener("keydown", r, !0), function() {
-    window.removeEventListener("keydown", r, !0);
-  };
-}
-var be = /* @__PURE__ */ y({ useState: () => X });
+}, ve = /* @__PURE__ */ y({ useState: () => X });
 function X(e) {
   const t = {}, n = new Proxy(e, {
     get(o, i) {
@@ -671,7 +671,7 @@ function X(e) {
     })
   };
 }
-var Y = class extends z {
+var Y = class extends $ {
   _state = X({
     seconds: 0,
     date: ""
@@ -683,7 +683,7 @@ var Y = class extends z {
     this.addCleanup(() => clearInterval(t));
   }
   render() {
-    const { on: e } = this._state, t = j("div", `
+    const { on: e } = this._state, t = w("div", `
       <div class="
         bg-background
         relative flex items-center gap-2 px-3 py-2 rounded-md border
@@ -704,41 +704,57 @@ var Y = class extends z {
       t.querySelector("#date-slot").textContent = n;
     }), t;
   }
+}, Z = class extends $ {
+  init(e) {
+    super.init(e);
+  }
+  render() {
+    return w("div", `        
+      <div class="flex flex-col items-center gap-2 justify-center m-1">
+        ${this.props.message || "Loading..."}
+        <div class="h-1 w-full overflow-hidden rounded-full bg-gray-400 mb-1">
+          <div
+            class="h-full w-full origin-left animate-[progress_2.5s_infinite_linear] bg-red-900 dark:bg-blue-800">
+          </div>
+        </div>
+      </div>
+    `, !0);
+  }
 };
-function qe(e) {
+function Re(e) {
   const t = () => {
-    "lucideIcons" in window && H(window.lucideIcons), K("clock-component", Y), (e ? Array.isArray(e) ? e : [e] : []).forEach((r) => r()), document.body.style.visibility = "visible";
+    "lucideIcons" in window && K(window.lucideIcons), _("clock-component", Y), _("progress-bar-component", Z), (e ? Array.isArray(e) ? e : [e] : []).forEach((r) => r()), document.body.style.visibility = "visible";
   };
   document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", t, { once: !0 }) : t();
   const n = localStorage.getItem("theme");
   (n === "dark" || !n && window.matchMedia("(prefers-color-scheme: dark)").matches) && document.documentElement.classList.add("dark");
 }
-var ve = /* @__PURE__ */ y({
-  accentNumericComparer: () => we,
-  buildSorter: () => Le,
-  clone: () => Oe,
-  createMap: () => Ee,
-  debounce: () => _e,
-  formatNumber: () => Ae,
-  getSafeFormData: () => Se,
-  getUniqueValues: () => Ce,
-  getUniqueValuesSorted: () => Ne,
-  getValueByPath: () => Z,
-  groupByNested: () => Te,
-  hasOwnProperty: () => Pe,
-  normalizeNFD: () => T,
-  toDate: () => je,
-  toMap: () => ke,
-  toSet: () => Me,
-  where: () => Ie
-}), Se = (e) => {
+var Se = /* @__PURE__ */ y({
+  accentNumericComparer: () => Ae,
+  buildSorter: () => Oe,
+  clone: () => Pe,
+  createMap: () => we,
+  debounce: () => Te,
+  formatNumber: () => Ce,
+  getSafeFormData: () => Ee,
+  getUniqueValues: () => Ne,
+  getUniqueValuesSorted: () => _e,
+  getValueByPath: () => ee,
+  groupByNested: () => Le,
+  hasOwnProperty: () => Ie,
+  normalizeNFD: () => O,
+  toDate: () => Fe,
+  toMap: () => je,
+  toSet: () => ke,
+  where: () => Me
+}), Ee = (e) => {
   const t = Array.from(e.entries()).map(([n, r]) => typeof r == "string" ? [n, r.trim()] : [n, r]);
   return Object.fromEntries(t);
 };
-function Ee(e, t = "id", n = "name") {
-  return Array.isArray(e) ? Object.fromEntries(e.map((r) => [r[t], Z(r, n)])) : {};
+function we(e, t = "id", n = "name") {
+  return Array.isArray(e) ? Object.fromEntries(e.map((r) => [r[t], ee(r, n)])) : {};
 }
-function Z(e, t) {
+function ee(e, t) {
   if (!t) return e;
   if (!t.includes(".")) return e?.[t];
   let n = e;
@@ -748,28 +764,28 @@ function Z(e, t) {
   }
   return n;
 }
-function we(e, t) {
+function Ae(e, t) {
   return e.localeCompare(t, void 0, {
     sensitivity: "accent",
     numeric: !0
   });
 }
-var T = (e) => e.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(), Ae = (e, t = "es") => new Intl.NumberFormat(t).format(e);
-function Ce(e, t) {
+var O = (e) => e.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(), Ce = (e, t = "es") => new Intl.NumberFormat(t).format(e);
+function Ne(e, t) {
   return [...new Set(e.map((n) => n[t]))];
 }
-function Ne(e, t) {
+function _e(e, t) {
   const n = /* @__PURE__ */ new Set();
   for (const r of e) r != null && n.add(r);
   return Array.from(n).sort(t);
 }
-function _e(e, t) {
+function Te(e, t) {
   let n = null;
   return (...r) => {
     n && clearTimeout(n), n = setTimeout(() => e(...r), t);
   };
 }
-function Te(e, ...t) {
+function Le(e, ...t) {
   if (t.length === 0) throw new Error("Debes proporcionar al menos una clave para agrupar.");
   const n = {};
   for (const r of e) {
@@ -781,27 +797,27 @@ function Te(e, ...t) {
   }
   return n;
 }
-function Le(e, t = "asc") {
+function Oe(e, t = "asc") {
   const n = t === "asc" ? 1 : -1, r = (s) => s === void 0 ? 0 : s === null ? 1 : s === "" ? 2 : 3;
   return (s, o) => {
     const i = s[e], a = o[e], c = r(i) - r(a);
     if (c !== 0) return c * n;
     if (typeof i == "boolean" && typeof a == "boolean") return (Number(i) - Number(a)) * n;
     if (typeof i == "number" && typeof a == "number") return (i - a) * n;
-    const l = T(String(i)), u = T(String(a));
+    const l = O(String(i)), u = O(String(a));
     return l.localeCompare(u, void 0, {
       sensitivity: "base",
       numeric: !0
     }) * n;
   };
 }
-function Oe(e) {
+function Pe(e) {
   return JSON.parse(JSON.stringify(e));
 }
-function Pe(e, t) {
+function Ie(e, t) {
   return Object.prototype.hasOwnProperty.call(e, t);
 }
-function Ie(e, t) {
+function Me(e, t) {
   if (typeof t == "function") return e.filter(t);
   if (t !== null && typeof t == "object") {
     const n = Object.entries(t);
@@ -817,13 +833,13 @@ function Ie(e, t) {
   }
   return e;
 }
-function Me(e, t) {
+function ke(e, t) {
   return new Set(e.map((n) => t === void 0 ? n : typeof t == "function" ? t(n) : n[t]));
 }
-function ke(e, t, n) {
+function je(e, t, n) {
   return new Map(e.map((r) => [typeof t == "function" ? t(r) : r[t], n === void 0 ? r : typeof n == "function" ? n(r) : r[n]]));
 }
-function je(e) {
+function Fe(e) {
   if (typeof e == "string" && e.length > 0) {
     const [t, n] = e.trim().split(" ");
     if (!t) return null;
@@ -831,9 +847,9 @@ function je(e) {
     if (!r || !s || !o) return null;
     let i = 0, a = 0, c = 0, l = 0;
     if (n) {
-      const [f, d, h] = n.split(":");
-      if (i = ~~(f || 0), a = ~~(d || 0), h) {
-        const m = h.split(".");
+      const [f, d, p] = n.split(":");
+      if (i = ~~(f || 0), a = ~~(d || 0), p) {
+        const m = p.split(".");
         c = ~~(m[0] || 0), l = ~~(m[1] || 0);
       }
     }
@@ -842,10 +858,10 @@ function je(e) {
   }
   return null;
 }
-var L = "VanillaLib2026:", C = (e) => L + e, Fe = {
+var P = "VanillaLib2026:", N = (e) => P + e, $e = {
   writeValue: function(e, t) {
     try {
-      localStorage.setItem(C(e), JSON.stringify({ value: t }));
+      localStorage.setItem(N(e), JSON.stringify({ value: t }));
     } catch (n) {
       console.error(`StorageUtil.writeValue error [${e}]:`, n);
     }
@@ -853,7 +869,7 @@ var L = "VanillaLib2026:", C = (e) => L + e, Fe = {
   },
   readValue: function(e, t) {
     try {
-      const n = localStorage.getItem(C(e));
+      const n = localStorage.getItem(N(e));
       if (n) return JSON.parse(n).value;
     } catch (n) {
       console.error(`StorageUtil.readValue error [${e}]:`, n);
@@ -865,7 +881,7 @@ var L = "VanillaLib2026:", C = (e) => L + e, Fe = {
     try {
       for (let n = 0; n < localStorage.length; n++) {
         const r = localStorage.key(n);
-        if (r && r.startsWith(L)) {
+        if (r && r.startsWith(P)) {
           const s = localStorage.getItem(r);
           if (s) try {
             const o = JSON.parse(s), i = r.substring(15);
@@ -882,7 +898,7 @@ var L = "VanillaLib2026:", C = (e) => L + e, Fe = {
   },
   removeValue: function(e) {
     try {
-      localStorage.removeItem(C(e));
+      localStorage.removeItem(N(e));
     } catch (t) {
       console.error(`StorageUtil.removeValue error [${e}]:`, t);
     }
@@ -893,7 +909,7 @@ var L = "VanillaLib2026:", C = (e) => L + e, Fe = {
       const e = [];
       for (let t = 0; t < localStorage.length; t++) {
         const n = localStorage.key(t);
-        n && n.startsWith(L) && e.push(n);
+        n && n.startsWith(P) && e.push(n);
       }
       e.forEach((t) => {
         localStorage.removeItem(t);
@@ -935,7 +951,7 @@ function He(e, t, n = "GET") {
     method: n
   };
 }
-function $e() {
+function We() {
   let e, t, n, r, s, o = "GET", i, a;
   const c = {};
   return {
@@ -981,40 +997,43 @@ function $e() {
         "Content-Type": "application/json",
         ...a ? { Authorization: `Bearer ${a}` } : {},
         ...c
-      }, h = u instanceof URLSearchParams || u instanceof FormData ? u : u ? JSON.stringify(u) : void 0;
+      }, p = u instanceof URLSearchParams || u instanceof FormData ? u : u ? JSON.stringify(u) : void 0;
       return De(() => fetch(l, {
         method: f,
         headers: d,
-        body: h
+        body: p
       }), t, r, i);
     }
   };
 }
-var We = { create: function() {
-  return $e();
-} }, Re = pe, Be = le, Ue = ne, Ve = ve, ze = te, Ke = {
-  ...be,
-  storage: Fe
-}, Je = {
-  RQ: We,
+var qe = { create: function() {
+  return We();
+} }, Be = ae, Ue = pe, Ve = ne, ze = Se, Ke = fe, Je = {
+  ...ve,
+  storage: $e
+}, xe = {
+  RQ: qe,
   pubSub: b
-}, Ge = { ClockComponent: Y };
+}, Ge = {
+  ClockComponent: Y,
+  ProgressBarComponent: Z
+};
 export {
-  z as BaseComponent,
+  $ as BaseComponent,
   Ge as Components,
-  Q as buildAndInterpolate,
-  Re as dom,
-  Be as hydrate,
-  fe as hydrateElement,
-  ze as icons,
-  qe as initApp,
+  V as buildAndInterpolate,
+  Be as dom,
+  Ue as hydrate,
+  ge as hydrateElement,
+  Ke as icons,
+  Re as initApp,
   b as pubSub,
-  K as registerComponent,
+  _ as registerComponent,
   E as resolveBindingValue,
-  Je as services,
-  Ke as state,
-  Ue as template,
-  Ve as utils
+  xe as services,
+  Je as state,
+  Ve as template,
+  ze as utils
 };
 
 //# sourceMappingURL=vanilla-reactive.es.js.map

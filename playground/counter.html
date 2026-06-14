@@ -17,6 +17,18 @@
 
   <style>
     body { visibility: hidden; }
+
+    @keyframes progress {
+      0% { transform: scaleX(0); }
+      100% { transform: scaleX(1); }
+    }
+
+    /* Esta regla le dice al navegador cómo ejecutar los keyframes */
+    .animate-\[progress_2\.5s_infinite_linear\] {
+      animation: progress 2.5s infinite linear;
+    }
+
+
   </style>
 
   <script>
@@ -114,7 +126,8 @@
       <div data-component="counter-component"></div>
       <div data-component="counter-component"></div>
       <div data-component="counter-component"></div>
-      <div data-component="counter-component"></div>    
+      <div data-component="counter-component"></div>
+      <div data-component="progress-bar-component" data-message="Espere..."></div>  
     </div>
 
   </div>

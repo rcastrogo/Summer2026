@@ -1,5 +1,5 @@
 // Auto-generated bundle - Do not edit manually
-// Generated: 2026-06-13T19:03:15.207Z
+// Generated: 2026-06-14T12:27:25.707Z
 (function() {
   if (!VanillaReactive) {
     console.error("VanillaReactive no está definido. Asegúrate de incluir vanilla-reactive.iife.js antes de este script.");

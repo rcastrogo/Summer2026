@@ -1,4 +1,3 @@
-import { ClockComponent } from './components/clock.component';
 
 // =============================================================================
 // ROOT EXPORTS - API principal (lo más usado por los componentes)
@@ -32,6 +31,8 @@ import * as _state from './state.utils';
 import { storage } from './storageUtil';
 import { RQ } from './services/http-client.service';
 import { pubSub } from './services/pubsub.service';
+import { ClockComponent } from './components/clock.component';
+import { ProgressBarComponent } from './components/progress-bar.component';
 
 /** DOM utilities: build, buildAndInterpolate, $ */
 export const dom = _dom;
@@ -59,4 +60,5 @@ export const services = { RQ, pubSub } as { RQ: typeof RQ; pubSub: typeof pubSub
 // =============================================================================
 export const Components = {
   ClockComponent,
+  ProgressBarComponent,
 } as const;

@@ -1,4 +1,5 @@
 import { ClockComponent } from './components/clock.component';
+import { ProgressBarComponent } from './components/progress-bar.component';
 import { registerComponent } from './hydrate';
 import { registerIcons } from './icons';
 
@@ -16,6 +17,7 @@ export function initApp(callbacks?: InitCallback | InitCallback[]): void {
     // are part of the library.
     // ========================================================================================
     registerComponent('clock-component', ClockComponent);
+    registerComponent('progress-bar-component', ProgressBarComponent);
 
     const fns = callbacks
       ? Array.isArray(callbacks) ? callbacks : [callbacks]
