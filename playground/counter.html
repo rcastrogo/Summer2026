@@ -15,19 +15,9 @@
   <script src="js/vanilla-reactive.iife.js"></script>
   <script src="js/app-components-bundle.js"></script>
 
+  <link rel="stylesheet" href="css/app.css">
   <style>
     body { visibility: hidden; }
-
-    @keyframes progress {
-      0% { transform: scaleX(0); }
-      100% { transform: scaleX(1); }
-    }
-
-    /* Esta regla le dice al navegador cómo ejecutar los keyframes */
-    .animate-\[progress_2\.5s_infinite_linear\] {
-      animation: progress 2.5s infinite linear;
-    }
-
 
   </style>
 
@@ -38,10 +28,13 @@
       resolveBindingValue, 
       registerComponent, 
       hydrateElement,
+      pubSub,
+      services,
+      dom
     } = VanillaReactive;
 
     // Componente counter usando factory function
-    const CounterComponent = function () {
+    const CounterComponent = function (ctx) {
       const self = {
         count: 0,
         bindings: [],
@@ -88,7 +81,7 @@
       };
       return self;
     };
-
+  
     VanillaReactive.initApp([
       () => {
         registerComponent('counter-component', CounterComponent);
@@ -116,11 +109,11 @@
       </p>
     </header>
 
-    <nav class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-      <a href="index.html" class="text-blue-600 dark:text-blue-400 hover:underline">
-        <i data-icon="chevron-left" class="inline-flex"></i> Playground
-      </a>
-    </nav>  
+    <nav class="my-4 flex gap-3">
+      <a href="index.html" class="text-blue-600 dark:text-blue-400 hover:underline">Home</a>      
+      <a href="reports.html" class="text-blue-600 dark:text-blue-400 hover:underline">Reports</a>
+      <a href="todo.html" class="text-blue-600 dark:text-blue-400 hover:underline">Todo List</a>
+    </nav>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div data-component="counter-component"></div>
@@ -128,6 +121,18 @@
       <div data-component="counter-component"></div>
       <div data-component="counter-component"></div>
       <div data-component="progress-bar-component" data-message="Espere..."></div>  
+    </div>
+
+    <div 
+      data-component="collapsible-component" 
+      class="mt-8" 
+      data-title="Detalles del código" 
+      data-expanded="false">
+      <p>
+        El componente CounterComponent se define como una función que devuelve un objeto con su estado, métodos y ciclo de vida.
+        El método render construye el HTML del componente usando buildAndInterpolate, que permite enlazar eventos y datos fácilmente.
+        Al hacer clic en los botones, se llaman a los métodos increment o decrement, que actualizan el estado y luego llaman a updateBindings para refrescar la interfaz.
+      </p>
     </div>
 
   </div>

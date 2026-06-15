@@ -17,6 +17,10 @@
 
   class ThemeToggleComponent extends BaseComponent {
 
+    constructor(ctx) {
+      super(ctx); 
+    }
+
     init(value) {
       super.init(value);
       const savedTheme = localStorage.getItem('theme');

@@ -18,6 +18,10 @@
 
   class TodoComponent extends BaseComponent {
 
+    constructor(ctx) {
+      super(ctx); 
+    }
+
     init(value) {
       super.init(value);
       this.setState({ items: ['Comprar leche', 'Pasear al perro', 'Estudiar JS'], input: '' }, false);
