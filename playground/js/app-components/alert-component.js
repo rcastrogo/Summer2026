@@ -1,0 +1,222 @@
+// AlertComponent – modal dialog con soporte para título, mensaje, icono y botones.
+(function () {
+
+  if (!VanillaReactive) {
+    console.error("VanillaReactive no está definido. Asegúrate de incluir vanilla-reactive.iife.js antes de este script.");
+    return;
+  }
+
+  const {
+    BaseComponent,
+    buildAndInterpolate,
+    registerComponent,
+  } = VanillaReactive;
+
+  const { setupFocusTrap } = VanillaReactive.dom;
+  const { pubSub } = VanillaReactive.services;
+
+  const ALERT_SIZE_CLASS_MAP = {
+    sm: 'w-[400px] max-w-[85vw] max-h-[90vh]',
+    md: 'w-[600px] max-w-[75vw] max-h-[90vh]',
+    lg: 'w-[75vw] max-h-[75vh]',
+    xl: 'w-[90vw] max-h-[90vh]',
+    fullscreen: 'fixed inset-0 w-screen h-screen max-w-none rounded-none',
+    none: '',
+    image: 'w-[80vw] !p-1',
+  };
+
+  const TEMPLATE = `
+    <div class="app-alert-wrapper fixed inset-0 z-50 overflow-y-auto">
+      <div on-click="onBackdropClick" tabindex="-1"
+        class="flex min-h-full items-center justify-center p-4 text-center js-back-drop">
+        <div
+          role="dialog"
+          class="
+            bg-white dark:bg-slate-900
+            border border-slate-200 dark:border-slate-800
+            shadow-xl
+            fixed
+            top-1/2 left-1/2
+            -translate-x-1/2 -translate-y-1/2
+            p-2
+            flex flex-col overflow-hidden animate-zoom-center
+            rounded-lg
+            {sizeClass}
+          "
+          tabindex="-1"
+          style="pointer-events: auto;"
+        >
+          @if(title)
+            <div class="shrink-0 mb-1">
+              <div class="flex items-center justify-center gap-4 py-1">
+                <h2 class="pl-12 flex-1 text-lg leading-none font-semibold text-slate-900 dark:text-white">
+                  {title}
+                </h2>
+                <button
+                  type="button"
+                  on-click="cancel"
+                  aria-label="Close dialog"
+                  class="
+                    shrink-0
+                    inline-flex items-center justify-center
+                    w-8 h-8
+                    rounded-md
+                    text-slate-500 hover:text-slate-900
+                    hover:bg-slate-100
+                    dark:text-slate-400 dark:hover:text-white
+                    dark:hover:bg-slate-800
+                    transition-colors
+                  "
+                >
+                  <i data-icon="x" class="size-5"></i>
+                </button>
+              </div>
+              @if(subTitle)
+                <div class="bg-slate-200 dark:bg-slate-800 h-px w-full"></div>
+                <p class="text-left text-slate-900 dark:text-white my-1 pl-2">
+                  {subTitle}
+                </p>
+              @endif
+              <div class="bg-slate-200 dark:bg-slate-800 h-px w-full"></div>
+            </div>
+          @endif
+
+          <div tabindex="0" class="sr-only"></div>
+          <div class="flex gap-4 min-h-0">
+            @if(icon)
+              <div class="text-slate-900 dark:text-white">
+                <div class="border p-2 rounded-md">
+                  <i data-icon="{icon}" class="size-8"></i>
+                </div>
+              </div>
+              <div class="flex group flex-1 min-h-0 overflow-y-auto items-center text-left">
+                {message}
+              </div>
+            @else
+              <div class="text-center w-full overflow-auto">
+                {message}
+              </div>
+            @endif
+          </div>
+
+          @if(showFooter)
+            <div class="shrink-0 mt-1">
+              <div class="bg-slate-200 dark:bg-slate-800 h-px w-full"></div>
+              <div class="flex justify-center gap-2 mt-2">
+                <button
+                  type="button"
+                  on-click="cancel"
+                  class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors
+                        bg-slate-900 dark:bg-slate-100
+                        text-white dark:text-slate-900
+                        hover:bg-slate-800 dark:hover:bg-slate-200
+                        py-2 px-6">
+                  {literals[0]}
+                </button>
+                @if(showConfirmButton)
+                  <button
+                    type="button"
+                    on-click="confirm"
+                    class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors
+                          bg-slate-900 dark:bg-slate-100
+                          text-white dark:text-slate-900
+                          hover:bg-slate-800 dark:hover:bg-slate-200
+                          py-2 px-6">
+                    {literals[1]}
+                  </button>
+                @endif
+              </div>
+            </div>
+            <div
+              on-publish="INFO_MESSAGE_UPDATED:local:html"
+              class="text-destructive text-sm text-center p-2">
+              {infoMessage}
+            </div>
+          @endif
+        </div>
+      </div>
+    </div>
+  `;
+
+  class AlertComponent extends BaseComponent {
+
+    constructor(ctx) {
+      super(ctx);
+      this.disableClose = false;
+      this.releaseFocusTrap = undefined;
+      this.showFooter = false;
+      this.showConfirmButton = false;
+      this.title = '';
+      this.subTitle = '';
+      this.message = '';
+      this.icon = '';
+      this.infoMessage = '';
+      this.size = 'md';
+      this.literals = ['Cerrar', 'Aceptar'];
+    }
+
+    get sizeClass() {
+      return ALERT_SIZE_CLASS_MAP[this.size] || ALERT_SIZE_CLASS_MAP.md;
+    }
+
+    init(ctx) {
+      super.init(ctx);
+      if (ctx?.data && typeof ctx.data === 'object' && 'message' in ctx.data) {
+        Object.assign(this, ctx.data);
+        if (ctx.data.autoCloseMs) {
+          setTimeout(() => this.close(), ctx.data.autoCloseMs);
+        }
+      }
+    }
+
+    render() {
+      this.element = buildAndInterpolate(TEMPLATE, this);
+      requestAnimationFrame(() => {
+        if (this.element) {
+          this.releaseFocusTrap = setupFocusTrap(this.element);
+        }
+      });
+      return this.bind(this.element);
+    }
+
+    onBackdropClick(_e, event) {
+      if (this.disableClose) return;
+      if (event.target.classList.contains('js-back-drop')) {
+        this.close();
+      }
+    }
+
+    close() {
+      if (this.onClose) this.onClose();
+      if (this.element) this.element.remove();
+      pubSub.publish('app-dialog-closed', this);
+      this.releaseFocusTrap?.();
+    }
+
+    canClose() {
+      return !this.disableClose;
+    }
+
+    cancel() {
+      if (this.onCancel) this.onCancel();
+      this.close();
+    }
+
+    confirm() {
+      if (this.onConfirm && this.onConfirm(this) === false) return;
+      this.close();
+    }
+
+    getContainer() {
+      return this.element;
+    }
+
+    setFeedback(text) {
+      this.infoMessage = text;
+      this.publish('INFO_MESSAGE_UPDATED', text);
+    }
+  }
+
+  registerComponent('app-alert', AlertComponent);
+
+}());
