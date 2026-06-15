@@ -1,5 +1,6 @@
 import { ClockComponent } from './components/clock.component';
 import { ProgressBarComponent } from './components/progress-bar.component';
+import { initObserver } from './dom';
 import { registerComponent } from './hydrate';
 import { registerIcons } from './icons';
 
@@ -24,6 +25,11 @@ export function initApp(callbacks?: InitCallback | InitCallback[]): void {
       : [];
     fns.forEach(fn => fn());
     document.body.style.visibility = 'visible';
+    // ===========================================================================================
+    // Initialize the DOM observer to automatically clean up component instances when their 
+    // corresponding DOM elements are removed from the document.
+    // ===========================================================================================
+    initObserver();
   };
 
   if (document.readyState === 'loading') {
@@ -38,4 +44,5 @@ export function initApp(callbacks?: InitCallback | InitCallback[]): void {
   const theme = localStorage.getItem('theme');
   const isDark = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
   if (isDark) document.documentElement.classList.add('dark');
+  
 }

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playground - Reports</title>
+  <script src="https://cdn.tailwindcss.com/3.4.15"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
+  <script src="js/icons.js"></script> 
+  <script src="js/vanilla-reactive.iife.js"></script>
+  <script src="js/app-components-bundle.js"></script>
+
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    body { visibility: hidden; }
+
+  </style>
+
+  <script>
+
+    const { 
+      BaseComponent, 
+      buildAndInterpolate,
+      resolveBindingValue, 
+      registerComponent, 
+      hydrateElement,
+      pubSub,
+      services,
+      dom
+    } = VanillaReactive;
+
+    async function generateJamonesReport(el, ev, name) {
+      // =================================================================
+      // Create a mediator to handle the report generation and rendering
+      // =================================================================
+      const mediator = new services.DefaultMediator( value => {
+        const container = dom.$('#report-slot').one();
+        if (container) {
+          mediator.applyResult(
+            container, 
+            value,
+            () => hydrateElement(container, {}) 
+          );
+        }    
+      });
+      // =================================================================
+      // Clear any previous state in the mediator
+      // =================================================================
+      mediator.clear();
+      pubSub.publish('APP_CONFIG.messages.httpClient.loading');
+      // =================================================================
+      // Fetch the data for the report
+      // =================================================================
+      const req = services.RQ.create();
+      const result = await req.getFrom('js/json/jamones.json')
+                              .useLog('Fetching jamones')
+                              .invoke();
+      pubSub.publish('APP_CONFIG.messages.httpClient.loaded');
+      if (typeof result === 'string') {
+        mediator.send(result);
+        return
+      }
+      // =================================================================
+      // Load the report definition and generate the report
+      // =================================================================
+      const reportname = `js/reports/${name}.report.js`;
+      const engine = new services.ReportEngineService();   
+      const rd = await engine.loadExternalReport(reportname);            
+      engine.generateReport(rd, result.data, mediator);
+      rd.mounted?.();
+    }
+  
+    async function merge() {
+      const container = dom.$('#each-slot').one();
+      pubSub.publish('APP_CONFIG.messages.httpClient.loading');
+      // =================================================================
+      // Fetch the data for the report
+      // =================================================================
+      const req = services.RQ.create();
+      const result = await req.getFrom('js/json/jamones.json')
+                              .useLog('Fetching jamones')
+                              .invoke();
+      pubSub.publish('APP_CONFIG.messages.httpClient.loaded');
+      if (typeof result === 'string') {
+        container.innerHTML = result;
+        return
+      }
+      const template = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" data-each="jamon in data">
+          <div  class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+            <h3 
+              class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2" 
+              data-bind="text:jamon.proveedor">
+            <h3 
+              class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2" 
+              data-bind="text:jamon.nombre">
+            </h3>
+            <p class="text-gray-500 dark:text-gray-400" data-bind="text:jamon.descripcion"></p>
+            <p class="text-gray-700 dark:text-gray-300 mt-2">
+              Precio: <span data-bind="text:jamon.precio"></span> €
+            </p>
+          </div>
+        </div>
+      `;
+      container.innerHTML = '';
+      container.appendChild(buildAndInterpolate(template, { data: result.data }));
+    }
+
+    const ctx = {
+      generateJamonesReport,
+      merge
+    };
+
+    VanillaReactive.initApp([
+      () => {
+        hydrateElement(document.body, ctx);
+      }
+    ]);
+
+  </script>
+
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors">
+  <div class="max-w-4xl mx-auto px-4">
+
+    <header class="">
+      <div data-component="header-component" class=""></div>
+      <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">
+        <i data-icon="layers" class="size-10 inline-flex"></i> 
+        Reports
+      </h1>
+      <p class="text-gray-500 dark:text-gray-400 mt-2 border border-gray-200 dark:border-gray-700 rounded p-4">
+        Página de ejemplo para probar la generación de reportes usando VanillaReactive y el motor de reportes.
+      </p>
+    </header>
+
+    <nav class="my-4 flex gap-3">
+      <a href="index.html" class="text-blue-600 dark:text-blue-400 hover:underline">Home</a>      
+      <a href="counter.html" class="text-blue-600 dark:text-blue-400 hover:underline">Counter</a>
+      <a href="todo.html" class="text-blue-600 dark:text-blue-400 hover:underline">Todo List</a>
+    </nav>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <button 
+        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+        on-click="generateJamonesReport:jamones-001">
+        <i data-icon="shuffle" class="size-6 inline-flex"></i> Informe Jamones 001
+      </button>
+      <button 
+        class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+        on-click="generateJamonesReport:jamones-002">
+        <i data-icon="shuffle" class="size-6 inline-flex"></i> Informe Jamones 002
+      </button>
+      <button 
+        class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+        on-click="merge">
+        <i data-icon="shuffle" class="size-6 inline-flex"></i> data-each
+      </button>
+    </div>
+
+    <div id="report-slot" class="">
+
+    </div>
+
+    <div id="each-slot" class="">
+
+    </div>
+
+
+  </div>
+
+</body>
+
+</html>

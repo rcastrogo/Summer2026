@@ -15,6 +15,10 @@
 
   class HeaderComponent extends BaseComponent {
 
+    constructor(ctx) {
+      super(ctx); 
+    }
+
     init(value) {
       super.init(value);
     }

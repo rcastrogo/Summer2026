@@ -18,6 +18,7 @@ export { buildAndInterpolate } from './dom';
 export { registerComponent, hydrateElement, resolveBindingValue } from './hydrate';
 export { pubSub } from './services/pubsub.service';
 export { initApp } from './initApp';
+export { FloatingPortal} from './floating-portal';
 
 // =============================================================================
 // NAMESPACES - API agrupada por dominio
@@ -33,6 +34,8 @@ import { RQ } from './services/http-client.service';
 import { pubSub } from './services/pubsub.service';
 import { ClockComponent } from './components/clock.component';
 import { ProgressBarComponent } from './components/progress-bar.component';
+import { ReportEngineService } from './services/report.service';
+import { DefaultMediator } from './report-engine/mediator';
 
 /** DOM utilities: build, buildAndInterpolate, $ */
 export const dom = _dom;
@@ -53,7 +56,12 @@ export const icons = _icons;
 export const state = { ..._state, storage };
 
 /** HTTP client and PubSub */
-export const services = { RQ, pubSub } as { RQ: typeof RQ; pubSub: typeof pubSub };
+export const services = { RQ, pubSub, ReportEngineService, DefaultMediator } as { 
+  RQ: typeof RQ; 
+  pubSub: typeof pubSub, 
+  ReportEngineService: typeof ReportEngineService,
+  DefaultMediator: typeof DefaultMediator,
+};
 
 // =============================================================================
 // Components registry (internal components bundled with the lib)
