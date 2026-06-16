@@ -1,8 +1,8 @@
-// CounterComponent – contador de clics por instancia, usando pubSub para comunicación.
+
 (function () {
 
   if (!VanillaReactive) {
-    console.error("VanillaReactive no está definido. Asegúrate de incluir vanilla-reactive.iife.js antes de este script.");
+    console.error('VanillaReactive no está definido.');
     return;
   }
 
@@ -54,6 +54,6 @@
     }
   }
 
-  registerComponent('app-counter', CounterComponent);
+  registerComponent('counter-component', CounterComponent);
 
 }());

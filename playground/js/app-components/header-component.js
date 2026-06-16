@@ -1,9 +1,8 @@
-// Componente Header usando BaseComponent
-// Este componente muestra el header principal de la aplicación con logo, título y toggle de tema.
+
 (function () {
 
   if (!VanillaReactive) {
-    console.error("VanillaReactive no está definido. Asegúrate de incluir vanilla-reactive.iife.js antes de este script.");
+    console.error('VanillaReactive no está definido.');
     return;
   }
 

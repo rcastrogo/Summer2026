@@ -1,7 +1,7 @@
 (function () {
 
   if (!VanillaReactive) {
-    console.error("VanillaReactive no está definido. Asegúrate de incluir vanilla-reactive.iife.js antes de este script.");
+    console.error('VanillaReactive no está definido.');
     return;
   }
 
@@ -15,11 +15,6 @@
     { id: 'departamentos',       label: 'Departamentos' },
     { id: 'categorias',          label: 'Categorías' },
     { id: 'estadospedidos',      label: 'Estados de Pedido' },
-    { id: 'monedas',             label: 'Monedas' },
-    { id: 'paises',              label: 'Países' },
-    { id: 'rolesusuario',        label: 'Roles de Usuario' },
-    { id: 'tiposdedocumento',    label: 'Tipos de Documento' },
-    { id: 'tiposdetransaccion',  label: 'Tipos de Transacción' },
   ];
 
   class FooterComponent extends BaseComponent {
@@ -29,7 +24,7 @@
     }
 
     get appIcons() {
-      const icons = (window.APP_CONFIG && window.APP_CONFIG.icons) || {};
+      const icons = lucideIcons || {};
       return Object.entries(icons).map(([key]) => ({
         html: `<i data-icon="${key}" class="size-5"></i>`,
         name: key,

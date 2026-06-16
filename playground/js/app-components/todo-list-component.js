@@ -1,11 +1,9 @@
 
-// Componente Todo List usando BaseComponent
-// Este componente muestra una lista de tareas con la capacidad de agregar y eliminar tareas. 
-// Utiliza el sistema de estado y renderizado de BaseComponent para mantener la interfaz actualizada.
+
 (function () {
 
   if (!VanillaReactive) {
-    console.error("VanillaReactive no está definido. Asegúrate de incluir vanilla-reactive.iife.js antes de este script.");
+    console.error('VanillaReactive no está definido.');
     return;
   }
 

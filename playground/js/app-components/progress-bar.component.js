@@ -1,7 +1,7 @@
 (function () {
 
   if (!VanillaReactive) {
-    console.error("VanillaReactive no está definido. Asegúrate de incluir vanilla-reactive.iife.js antes de este script.");
+    console.error('VanillaReactive no está definido.');
     return;
   }
 
@@ -98,29 +98,6 @@
     }
   }
 
-  class RedProgressBarComponent extends BaseComponent {
-
-    init(ctx) {
-      super.init(ctx);
-    }
-
-    render() {
-      const message = this.props.message || 'Loading...';
-      const template = `        
-        <div class="flex flex-col items-center gap-2 justify-center m-1">
-          ${message}
-          <div class="h-1 w-full overflow-hidden rounded-full bg-red-900 mb-1">
-            <div
-              class="h-full w-full origin-left animate-[progress_2.5s_infinite_linear] bg-gray-400">
-            </div>
-          </div>
-        </div>
-      `;
-      return buildAndInterpolate(template, this);
-    }
-  }
-
   registerComponent('progress-bar-component', ProgressBarComponent);
-  registerComponent('red-progress-bar-component', RedProgressBarComponent);
 
 }());
