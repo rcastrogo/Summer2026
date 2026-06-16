@@ -1,5 +1,5 @@
 // Auto-generated bundle - Do not edit manually
-// Generated: 2026-06-16T06:28:29.746Z
+// Generated: 2026-06-16T06:29:46.666Z
 (function() {
   if (!VanillaReactive) {
     console.error("VanillaReactive no está definido.");
