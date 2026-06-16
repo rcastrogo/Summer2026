@@ -24,6 +24,8 @@ await esbuild.build({
   bundle: false,
   format: 'esm',
   minify: false,
+  minifyWhitespace: true,
+  minifySyntax: true,
   charset: 'utf8',
   banner: { js: '// Auto-generated bundle - Do not edit manually\n// Generated: ' + new Date().toISOString() },
 });

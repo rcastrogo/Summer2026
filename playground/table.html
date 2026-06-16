@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playground - TableComponent</title>
+  <script src="https://cdn.tailwindcss.com/3.4.15"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
+  <script src="js/icons.js"></script> 
+  <script src="js/vanilla-reactive.iife.js"></script>
+  <script src="js/app-components-bundle.js"></script>
+  <script src="js/app-components/samples/table.component.js"></script>
+
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    body { visibility: hidden; }
+  </style>
+
+  <script>
+
+    const { 
+      BaseComponent, 
+      buildAndInterpolate,
+      resolveBindingValue, 
+      registerComponent, 
+      hydrateElement,
+      pubSub,
+      services,
+      dom
+    } = VanillaReactive;
+
+    async function loadData(el, ev) {
+      const table = BaseComponent.getInstance('[table-component]');
+      table?.showSkeletonRows();
+      // =================================================================
+      // Fetch the data for the table
+      // =================================================================
+      pubSub.publish('APP_CONFIG.messages.httpClient.loading');
+      const req = services.RQ.create();
+      const result = await req.getFrom('js/json/jamones.json')
+                              .useLog('Fetching jamones')
+                              .useTransform((data) => data.map((item, i) => ({ ...item, id: i + 1 })))
+                              .invoke();
+      pubSub.publish('APP_CONFIG.messages.httpClient.loaded');
+      if (typeof result === 'string') {
+        alert(result);
+        return
+      }
+      setTimeout( () => table?.setData(result.data), 2_000);
+    }
+
+    onCreate = (sender) => {
+      console.log('onCreate triggered');
+    }
+
+    onDelete = (sender, ids) => {
+      console.log('onDelete triggered for IDs: ' + ids.join(', '));
+    }
+
+    onEdit = (sender, target) => {
+      console.log('onEdit triggered for ID: ' + target.id);
+    }
+
+    onAction = (sender, action) => {
+      console.log('onAction triggered for action: ' + action);
+    }
+  
+    const ctx = {
+      onCreate,
+      onDelete,
+      onEdit,
+      onAction,
+      onLoadData: loadData,
+      data: [],
+      columns: [
+        {
+          key: 'id',
+          title: 'ID',
+          className: 'w-16 text-center',
+          sorter: (a, b) => a.id - b.id,
+          options: {
+            shouldShowFilterButton: false,
+            canBeRemoved: false,
+          },
+        },
+        {
+          key: 'descripcion',
+          title: 'Descripción',
+          className: 'text-left min-w-48',
+          sorter: (a, b) => a.descripcion.localeCompare(b.descripcion),
+        },
+        {
+          key: 'proveedor',
+          title: 'Proveedor',
+          className: 'text-left min-w-40',
+          sorter: (a, b) => a.proveedor.localeCompare(b.proveedor),
+          grouping: VanillaReactive.TableHelpers.valueGrouping()
+        },
+        {
+          key: 'tipo',
+          title: 'Tipo',
+          className: 'text-left min-w-28',
+          sorter: (a, b) => a.tipo.localeCompare(b.tipo),
+          grouping: VanillaReactive.TableHelpers.valueGrouping()
+        },
+        {
+          key: 'denominacion',
+          title: 'Denominación',
+          className: 'text-left min-w-40',
+          sorter: (a, b) => a.denominacion.localeCompare(b.denominacion),
+          grouping: VanillaReactive.TableHelpers.valueGrouping()
+        },
+        {
+          key: 'temporada',
+          title: 'Temporada',
+          className: 'text-center w-24',
+          sorter: (a, b) => a.temporada - b.temporada,
+        },
+        {
+          key: 'unidades',
+          title: 'Uds.',
+          className: 'text-right w-20',
+          sorter: (a, b) => a.unidades - b.unidades,
+          cellRender: (row) => `<span class="font-mono text-sm">${row.unidades.toLocaleString()}</span>`,
+        },
+        {
+          key: 'kgs',
+          title: 'Kgs',
+          className: 'text-right w-24',
+          sorter: (a, b) => a.kgs - b.kgs,
+          cellRender: (row) => `<span class="font-mono text-sm">${row.kgs.toLocaleString('es-ES', { minimumFractionDigits: 1 })} kg</span>`,
+        },
+        {
+          key: 'importe',
+          title: 'Importe',
+          className: 'text-right min-w-28',
+          sorter: (a, b) => a.importe - b.importe,
+          cellRender: (row) => `<span class="font-mono text-sm">${row.importe.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>`,
+        },
+      ],
+      actions: [
+        { 
+          key: 'export', label: 'Exportar datos', icon: 'book-open', show: 'menu', 
+          enabledWhen : (selected) => selected.size === 2 
+        },
+        {
+          key: 'duplicate', label: 'Duplicar', icon: 'timer', show: 'button',
+          enabledWhen: (selected) => selected.size === 3
+        },
+        { 
+          key: 'custom', 
+          label: 'Alert',
+          icon: 'sun', 
+          show: 'both',
+          onClick: () => alert('custom'),
+          enabledWhen: (selected) => selected.size === 4
+        },
+      ]
+    };
+
+    VanillaReactive.initApp([
+      () => {
+        const style = document.createElement('style');
+        style.textContent = `
+          *, ::after, ::before {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: var(--border);
+          }
+        `;
+        document.head.appendChild(style);
+      },
+      () => {
+        hydrateElement(document.body, ctx);
+        loadData();
+      }
+    ]);
+
+  </script>
+
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors">
+  <div class="max-w-4xl mx-auto px-4">
+
+    <header class="">
+      <div data-component="header-component" class=""></div>
+      <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">
+        <i data-icon="layers" class="size-10 inline-flex"></i> 
+        TableComponent
+      </h1>
+      <p class="text-gray-500 dark:text-gray-400 mt-2 border border-gray-200 dark:border-gray-700 rounded p-4">
+        Página de ejemplo para probar el TableComponent. 
+      </p>
+    </header>
+
+    <nav class="my-4 flex gap-3">
+      <a href="index.html" class="text-blue-600 dark:text-blue-400 hover:underline">Home</a>      
+      <a href="counter.html" class="text-blue-600 dark:text-blue-400 hover:underline">Counter</a>
+      <a href="todo.html" class="text-blue-600 dark:text-blue-400 hover:underline">Todo List</a>
+      <a href="reports.html" class="text-blue-600 dark:text-blue-400 hover:underline">Reports</a>
+    </nav>
+
+    <div 
+      id="countries-table"
+      class="border-gray-300 dark:border-gray-700"
+      data-component="table-component"
+      data-key="jamones-table"            
+      (on-refresh)="onLoadData"
+      (on-create)="onCreate"
+      (on-delete)="onDelete"
+      (on-edit)="onEdit"
+      (on-action)="onAction"
+      (actions)="actions"
+      (columns)="columns"
+      (data)="data">
+    </div>
+
+    <div data-component="footer-component" class="mt-8"></div>
+
+  </div>
+
+</body>
+
+</html>

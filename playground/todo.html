@@ -22,9 +22,55 @@
 
   <script>
 
+    function handleTabChange(tab) {
+      console.log(`Tab activa: ${tab.title} (${tab.id}, #${tab.index + 1})`);
+    }
+
+    function handleTabClose(tab) {
+      console.log(`Tab cerrada: ${tab.title} (${tab.id}, #${tab.index + 1})`);
+    }
+
+    function cycleTabMode() {
+      const tabRef = VanillaReactive.BaseComponent.getInstance('[tab-component]');
+      tabRef?.cycleVariant();
+      if(this.bindings) {
+        this.bindings.forEach((binding) => {
+          this.fecha = new Date().toLocaleTimeString();
+          VanillaReactive.resolveBindingValue(binding, this);
+        });
+      }
+    }
+
+    function addRandomTab() {
+      const tab = VanillaReactive.BaseComponent.getInstance('[tab-component]');
+      const id = `tab-${Math.random().toString(16).slice(2)}`;
+      const close = () => {
+        tab.removeTab(id);
+      }
+      const template = `
+        Contenido del ${id} 
+        <button class="app-button" on-click="close"><i data-icon="x" class="inline-flex size-4"></i></button>
+      `;
+      const element = VanillaReactive.buildAndInterpolate(template, { close }, false, { className: 'p-8' });
+      const newTab = { 
+        id, 
+        title: `Tab ${id.slice(-4)}`, 
+        icon: ['power', 'zap', 'rocket', 'timer', 'sun'][Math.floor(Math.random() * 5)]
+      }
+      tab?.addTab(newTab, element, true);
+    }
+
     VanillaReactive.initApp([
       () => {
-        VanillaReactive.hydrateElement(document.body, {});
+        VanillaReactive.hydrateElement(
+          document.body, 
+          { 
+            handleTabChange, 
+            handleTabClose,
+            cycleTabMode,
+            addRandomTab
+          }
+        );
       }
     ]);
   </script>
@@ -52,6 +98,7 @@
       <a href="index.html" class="text-blue-600 dark:text-blue-400 hover:underline">Home</a>      
       <a href="reports.html" class="text-blue-600 dark:text-blue-400 hover:underline">Reports</a>
       <a href="counter.html" class="text-blue-600 dark:text-blue-400 hover:underline">Counter</a>
+      <a href="table.html" class="text-blue-600 dark:text-blue-400 hover:underline">Table</a>
     </nav>
 
     <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Todo List con BaseComponent (IIFE)</h1>
@@ -61,6 +108,30 @@
     <div data-component="footer-component"></div>
     <div data-component="logo-component"></div>
     <div data-component="counter-component"></div>
+
+    <div class="min-h-[50vh] mb-12 text-center">
+      <div 
+        data-component="tab-component" 
+        data-selected="perfil" 
+        data-variant="segmented" 
+        (tabchange)="handleTabChange"
+        (tabclose)="handleTabClose"
+        class="mt-8">
+
+        <div data-id="sin-icono" data-title="Texto">
+          <h3 class="font-bold text-lg">Sin icono</h3>
+          <p>
+            Este tab no tiene icono, solo texto. <span data-bind="text:fecha">66666</span> Puedes usarlo para secciones donde el icono no es necesario o para mantener un diseño más limpio.
+          </p>
+        </div>
+        <div data-id="perfil" data-title="Mi Perfil" data-icon-name="user">
+          <h3 class="font-bold text-lg">Información Personal</h3>
+          <p>Aquí va un formulario o texto para el perfil del usuario.</p>
+          <button on-click="cycleTabMode" class="app-button btn-primary mt-2">Cambiar</button>
+          <button on-click="addRandomTab" class="app-button btn-primary mt-2">Add</button>
+        </div>
+      </div>
+    </div>
 
   </div>
 

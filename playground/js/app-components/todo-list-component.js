@@ -10,11 +10,10 @@
   const {
     BaseComponent,
     buildAndInterpolate,
-    hydrateElement,
     registerComponent,
   } = VanillaReactive;
 
-  class TodoComponent extends BaseComponent {
+  class TodoComponent extends BaseComponent { 
 
     constructor(ctx) {
       super(ctx); 

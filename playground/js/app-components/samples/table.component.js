@@ -192,6 +192,7 @@
 
     notifyFilterChange() {
       if (!this.column) return;
+      // @ts-ignore
       if (this.filterChanged) this.filterChanged(this.column.key, this.searchText, this.selectedValues);
       this.state.hasActiveFilter = this.isFilterActive;
     }
@@ -209,6 +210,7 @@
         uniqueValues = [...new Set(this.data.map(row => fn(row)))];
       } else {
         uniqueValues = getUniqueValues(
+          // @ts-ignore
           this.data,
           typeof this.column.accessor === 'string' ? this.column.accessor : this.column.key
         );
@@ -232,7 +234,7 @@
       if (changedProp && this.element) { this.updateBindings(); return this.element; }
       const template = `
         <div
-          data-component="app-popover-trigger"
+          data-component="popover-trigger-component"
           data-placement="top-end"
           (click-inside)="clickInside"
           (before-open)="onOpenMenu"
@@ -425,10 +427,13 @@
 
     // ─── Toolbar action handlers ──────────────────────────────────
 
+    // @ts-ignore
     refreshData() { if (this.onRefresh) this.onRefresh(this); }
 
     createRow() {
+      // @ts-ignore
       if (this.onCreate) {
+        // @ts-ignore
         this.onCreate(this, (newItem) => {
           const data = this.state.data;
           this.setData([...data, newItem]);
@@ -438,7 +443,9 @@
 
     deleteRows() {
       const ids = Array.from(this.state.selected);
+      // @ts-ignore
       if (this.onDelete) {
+        // @ts-ignore
         this.onDelete(this, ids, () => {
           const data = this.state.data;
           this.setData(data.filter(r => !ids.includes(r.id)));
@@ -452,7 +459,9 @@
       const data = this.state.data;
       const item = data.find(r => r.id === ids[0]);
       if (!item) return;
+      // @ts-ignore
       if (this.onEdit) {
+        // @ts-ignore
         this.onEdit(this, item, (updatedItem) => {
           this.setData(data.map(r => r.id === updatedItem.id ? updatedItem : r));
         });
@@ -480,6 +489,7 @@
         if (!Number.isNaN(size)) { this.setState({ pageSize: size, currentPage: 1 }); this.savePageSize(); }
         return;
       }
+      // @ts-ignore
       if (this.onAction) this.onAction(this, action);
     }
 
@@ -548,6 +558,7 @@
       }
     }
 
+    // @ts-ignore
     handleRowClick(_el, _e, id) { if (this.onRowClick) this.onRowClick(this, id); }
 
     handleGroupClick(el, _e, groupKey) {
@@ -596,6 +607,7 @@
         row.classList.remove('bg-blue-50!', 'dark:bg-blue-900/20!');
         if (isSelected) row.classList.add('bg-blue-50!', 'dark:bg-blue-900/20!');
         const checkbox = $('input[type="checkbox"]', row).one();
+        // @ts-ignore
         if (checkbox) checkbox.checked = isSelected;
       });
       this.patchStatus();
@@ -685,7 +697,9 @@
         }
       }
       const pageInput = this.element.querySelector('[data-page-input]');
+      // @ts-ignore
       if (pageInput) pageInput.value = String(currentPage);
+      // @ts-ignore
       if (this.onUpdateUi) {
         const payload = {
           toolbarContainer: $('[data-table-toolbar]', this.element).one(),
@@ -699,6 +713,7 @@
           },
           status: this.buildStatusHtml(),
         };
+        // @ts-ignore
         this.onUpdateUi(payload);
       }
     }
@@ -788,7 +803,7 @@
                 <span class="flex-1 text-left">${col.title}</span>${sortMarker}
                 ${shouldShowFilterButton ? `
                   <span
-                    data-component="app-column-filter-button"
+                    data-component="column-filter-button-component"
                     (filter-changed)="handleFilterChanged"
                     (column)="state.columns[${index}]"
                     (data)="state.data"
@@ -1001,7 +1016,7 @@
 
               <div data-bind="hide:state.hideMenuButton" class="js-menu w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1 shrink-0"></div>
               <div
-                data-component="app-popover-trigger"
+                data-component="popover-trigger-component"
                 data-placement="top-end"
                 (click-inside)="clickInside"
                 (before-open)="onOpenMenu"
@@ -1149,7 +1164,8 @@
   }
 
   // Expose grouping helpers for consumer use
-  window.TableHelpers = {
+  // @ts-ignore
+  VanillaReactive.TableHelpers = {
     TABLE_ACTIONS,
     DEFAULT_GROUP_CLASS,
     numericRangeGrouping,
@@ -1158,7 +1174,7 @@
     dateRangeGrouping,
   };
 
-  registerComponent('app-column-filter-button', ColumnFilterButtonComponent);
-  registerComponent('app-table', TableComponent);
+  registerComponent('column-filter-button-component', ColumnFilterButtonComponent);
+  registerComponent('table-component', TableComponent);
 
 }());

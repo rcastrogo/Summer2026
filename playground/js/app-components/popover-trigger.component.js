@@ -13,7 +13,7 @@
   } = VanillaReactive;
 
   const { $, setupFocusTrap } = VanillaReactive.dom;
-  const FloatingPortal        = window.FloatingPortal;
+  const FloatingPortal        = VanillaReactive.FloatingPortal;
 
   class PopoverTriggerComponent extends BaseComponent {
 
@@ -174,12 +174,12 @@
         this.updateBindings();
         return this.element;
       }
-      const template = `
-        <div class="contents">
-          <div data-each="child in children"></div>
-        </div>
-      `;
-      return buildAndInterpolate(template, this);
+      const wrapper = document.createElement('div');
+      wrapper.className = 'contents';
+      this.children.forEach(child => {
+        if (child instanceof Node) wrapper.appendChild(child);
+      });
+      return wrapper;
     }
   }
 
