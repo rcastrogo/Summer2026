@@ -1,14 +1,11 @@
 
+import type { NotificationType } from "../types";
 import { pubSub } from "./pubsub.service";
-
-import { APP_CONFIG } from "@/app.config";
-import type { NotificationType } from "@/components/notification-panel/notification-panel.model";
-
 
 class NotificationService {
 
   show(message: string, autoCloseMs?: number, type: NotificationType = '') {
-    pubSub.publish(APP_CONFIG.messages.app.showNotification, {
+    pubSub.publish('APP_CONFIG.messages.app.showNotification', {
       message,
       autoCloseMs,
       type
@@ -32,7 +29,7 @@ class NotificationService {
   }
 
   close(id: number) {
-    pubSub.publish(APP_CONFIG.messages.app.closeNotification, id);
+    pubSub.publish('APP_CONFIG.messages.app.closeNotification', id);
   }
 
 }

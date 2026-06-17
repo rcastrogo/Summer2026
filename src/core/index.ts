@@ -36,6 +36,7 @@ import { ClockComponent } from './components/clock.component';
 import { ProgressBarComponent } from './components/progress-bar.component';
 import { ReportEngineService } from './services/report.service';
 import { DefaultMediator } from './report-engine/mediator';
+import { notificationService } from './services/notification.service';
 
 /** DOM utilities: build, buildAndInterpolate, $ */
 export const dom = _dom;
@@ -56,11 +57,12 @@ export const icons = _icons;
 export const state = { ..._state, storage };
 
 /** HTTP client and PubSub */
-export const services = { RQ, pubSub, ReportEngineService, DefaultMediator } as { 
+export const services = { RQ, pubSub, ReportEngineService, DefaultMediator, notificationService } as { 
   RQ: typeof RQ; 
   pubSub: typeof pubSub, 
   ReportEngineService: typeof ReportEngineService,
   DefaultMediator: typeof DefaultMediator,
+  notificationService: typeof notificationService
 };
 
 // =============================================================================

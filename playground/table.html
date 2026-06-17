@@ -15,6 +15,8 @@
   <script src="js/vanilla-reactive.iife.js"></script>
   <script src="js/app-components-bundle.js"></script>
   <script src="js/app-components/samples/table.component.js"></script>
+  <script src="js/app-components/samples/notification-panel.component.js"></script>
+  
 
   <link rel="stylesheet" href="css/app.css">
   <style>
@@ -55,6 +57,7 @@
     }
 
     onCreate = (sender) => {
+      services.notificationService.show('onCreate triggered', 10_000, 'info');
       console.log('onCreate triggered');
     }
 
@@ -211,7 +214,8 @@
       id="countries-table"
       class="border-gray-300 dark:border-gray-700"
       data-component="table-component"
-      data-key="jamones-table"            
+      data-key="jamones-table"     
+      data-resize-columns="true"    
       (on-refresh)="onLoadData"
       (on-create)="onCreate"
       (on-delete)="onDelete"
@@ -225,7 +229,7 @@
     <div data-component="footer-component" class="mt-8"></div>
 
   </div>
-
+  <div data-component="notification-panel-component" data-position="top-right"></div>
 </body>
 
 </html>

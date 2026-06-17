@@ -1,4 +1,4 @@
-var Y = Object.defineProperty, T = (e, t) => {
+var Y = Object.defineProperty, R = (e, t) => {
   let n = {};
   for (var r in e)
     Y(n, r, {
@@ -6,7 +6,7 @@ var Y = Object.defineProperty, T = (e, t) => {
       enumerable: !0
     });
   return t || Y(n, Symbol.toStringTag, { value: "Module" }), n;
-}, Ce = /* @__PURE__ */ T({
+}, Ce = /* @__PURE__ */ R({
   decodeHTMLEntities: () => se,
   evaluateExpression: () => te,
   getValue: () => C,
@@ -64,14 +64,14 @@ function C(e, t) {
   if (!e || e === "this") return t;
   const n = e.split("|").map((a) => a.trim()), r = n.shift() || "", o = n;
   if (r.startsWith("t:")) {
-    const [a, ...c] = r.slice(2).split(":");
-    return o.unshift("t"), o[0] += ":" + c.join(":"), H(o, a, t);
+    const [a, ...l] = r.slice(2).split(":");
+    return o.unshift("t"), o[0] += ":" + l.join(":"), H(o, a, t);
   }
   if (r.startsWith("'") && r.endsWith("'")) {
-    const [a, ...c] = r.slice(1, -1).split(":");
-    return o.unshift("t"), o[0] += ":" + c.join(":"), H(o, a, t);
+    const [a, ...l] = r.slice(1, -1).split(":");
+    return o.unshift("t"), o[0] += ":" + l.join(":"), H(o, a, t);
   }
-  const s = ((r || "").replace(/{([^{}]+)}/g, (a, c) => C(c.trim(), t)) || "").split(/\.|\[|\]/).filter((a) => a !== "");
+  const s = ((r || "").replace(/{([^{}]+)}/g, (a, l) => C(l.trim(), t)) || "").split(/\.|\[|\]/).filter((a) => a !== "");
   let i = t || self;
   if (Se(s[0] || "", t)) {
     for (const a of s) if (i !== null && typeof i == "object" && a in i) i = i[a];
@@ -98,8 +98,8 @@ function H(e, t, n) {
   return e.reduce((r, o) => {
     const [s, ...i] = Ae(o, ":"), a = C(s, n) || Z[s || ""];
     if (typeof a == "function") {
-      const c = i.map((l) => l.startsWith("'") && l.endsWith("'") ? l.slice(1, -1) : l.startsWith("@") ? C(l.slice(1), n) : l);
-      return a.apply(n, [r, ...c]);
+      const l = i.map((c) => c.startsWith("'") && c.endsWith("'") ? c.slice(1, -1) : c.startsWith("@") ? C(c.slice(1), n) : c);
+      return a.apply(n, [r, ...l]);
     }
     return console.warn(`Filtro "${s}" no encontrado.`), r;
   }, t);
@@ -151,18 +151,18 @@ function U(e, t) {
   if (!e.includes("@if")) return e;
   let n = 0, r = "";
   for (; n < e.length; ) if (e.startsWith("@if(", n)) {
-    const o = n + 3, s = Le(e, o, "(", ")");
+    const o = n + 3, s = Ne(e, o, "(", ")");
     if (s === -1) {
       r += e[n], n++;
       continue;
     }
-    const i = e.slice(o + 1, s), a = s + 1, c = _e(e, a);
-    if (c === -1) {
+    const i = e.slice(o + 1, s), a = s + 1, l = _e(e, a);
+    if (l === -1) {
       r += e[n], n++;
       continue;
     }
-    const l = e.slice(a, c), u = te(se(i), t);
-    u === "__UNDEFINED__" ? r += `@if(${i})${l}@endif` : u && (r += U(l, t)), n = c + 6;
+    const c = e.slice(a, l), u = te(se(i), t);
+    u === "__UNDEFINED__" ? r += `@if(${i})${c}@endif` : u && (r += U(c, t)), n = l + 6;
   } else
     r += e[n], n++;
   return r;
@@ -180,7 +180,7 @@ function _e(e, t) {
   }
   return -1;
 }
-function Le(e, t, n, r) {
+function Ne(e, t, n, r) {
   let o = 0;
   for (let s = t; s < e.length; s++)
     if (e[s] === n ? o++ : e[s] === r && o--, o === 0) return s;
@@ -204,13 +204,13 @@ function se(e) {
   };
   return e.replace(/&amp;|&lt;|&gt;|&quot;|&#39;|&nbsp;/g, (n) => t[n || ""] || n);
 }
-var Ne = /* @__PURE__ */ T({
+var Le = /* @__PURE__ */ R({
   $: () => Oe,
   build: () => F,
   buildAndInterpolate: () => oe,
   getQueryParams: () => ke,
   initObserver: () => ie,
-  setupFocusTrap: () => Re
+  setupFocusTrap: () => Pe
 });
 function F(e, t = {}, n = !1, r) {
   const o = document.createElement(e);
@@ -221,11 +221,11 @@ function F(e, t = {}, n = !1, r) {
     const { className: s, ...i } = t;
     if (Object.assign(o, i), s && (o.className = s), r && "slottedNodes" in r) {
       const a = r.slottedNodes;
-      for (const [c, l] of Object.entries(a)) {
-        const u = o.querySelector(`slot[name="${c}"]`);
+      for (const [l, c] of Object.entries(a)) {
+        const u = o.querySelector(`slot[name="${l}"]`);
         if (u) {
           const d = u.parentElement;
-          for (const h of l) h instanceof Node && d.insertBefore(h, u);
+          for (const h of c) h instanceof Node && d.insertBefore(h, u);
           u.remove();
         }
       }
@@ -251,7 +251,7 @@ function ke() {
   const e = new URLSearchParams(window.location.search);
   return Object.fromEntries(e.entries());
 }
-function Re(e) {
+function Pe(e) {
   if (!e) return;
   const t = [
     "a[href]",
@@ -272,8 +272,8 @@ function Re(e) {
       s.preventDefault();
       return;
     }
-    const a = i[0], c = i[i.length - 1], l = document.activeElement;
-    !s.shiftKey && l === c ? (a?.focus(), s.preventDefault()) : s.shiftKey && (l === a || !e.contains(l)) && (c?.focus(), s.preventDefault());
+    const a = i[0], l = i[i.length - 1], c = document.activeElement;
+    !s.shiftKey && c === l ? (a?.focus(), s.preventDefault()) : s.shiftKey && (c === a || !e.contains(c)) && (l?.focus(), s.preventDefault());
   }, o = n();
   return o.length > 0 && o[0]?.focus(), window.addEventListener("keydown", r, !0), function() {
     window.removeEventListener("keydown", r, !0);
@@ -300,14 +300,14 @@ var ie = () => {
     return;
   }
   console.log("DOM Observer NOT active");
-}, Te = /* @__PURE__ */ T({
-  createIcon: () => ce,
-  registerIcons: () => le
+}, Re = /* @__PURE__ */ R({
+  createIcon: () => le,
+  registerIcons: () => ce
 }), ae = {};
-function le(e) {
+function ce(e) {
   for (const [t, n] of Object.entries(e)) ae[t] = n;
 }
-function ce(e, t = "w-6 h-6") {
+function le(e, t = "w-6 h-6") {
   const n = ae[e] || "";
   if (n) {
     const r = document.createElement("div");
@@ -318,7 +318,7 @@ function ce(e, t = "w-6 h-6") {
   }
   return e;
 }
-var Pe = class {
+var Te = class {
   topics = /* @__PURE__ */ new Map();
   GLOBAL_SCOPE = /* @__PURE__ */ Symbol("global");
   getScopeKey(e) {
@@ -344,7 +344,7 @@ var Pe = class {
       o !== this.GLOBAL_SCOPE ? r.get(o)?.forEach((s) => s(t)) : r.forEach((s) => s.forEach((i) => i(t)));
     });
   }
-}, O = new Pe(), Ie = /* @__PURE__ */ T({
+}, L = new Te(), Ie = /* @__PURE__ */ R({
   getComponent: () => Me,
   getHydrationPromise: () => fe,
   getResolver: () => de,
@@ -379,7 +379,7 @@ function xe(e, t) {
 }
 function z(e = document.body) {
   return e.querySelectorAll("[data-icon]").forEach((t) => {
-    const n = t.dataset.icon, r = t.className, o = ce(n, r);
+    const n = t.dataset.icon, r = t.className, o = le(n, r);
     o && t.replaceWith(o);
   }), e;
 }
@@ -391,7 +391,7 @@ function K(e, t) {
     Array.from(o.attributes).forEach((s) => {
       const i = s.name, a = s.value;
       if (i === "on-publish") {
-        const [c, l, u, ...d] = a.split(":"), h = l === "local" ? t.instanceId : void 0, p = O.subscribe(c, (y) => {
+        const [l, c, u, ...d] = a.split(":"), h = c === "local" ? t.instanceId : void 0, p = L.subscribe(l, (y) => {
           const S = y && typeof y == "object" && "args" in y ? y.args[0] : y;
           switch ((u || "").toLowerCase()) {
             case "classname":
@@ -420,34 +420,34 @@ function K(e, t) {
         }, h);
         t.component && t.component.addCleanup(p), o.removeAttribute(i);
       } else if (i.startsWith("on-")) {
-        const c = i.replace("on-", "");
+        const l = i.replace("on-", "");
         if (a.startsWith("publish")) {
-          const [, l, u, ...d] = a.split(":");
-          if (!l) {
+          const [, c, u, ...d] = a.split(":");
+          if (!c) {
             console.warn("Falta el topic en el publish:", a);
             return;
           }
           const h = u === "local" ? t.instanceId : void 0;
-          o.addEventListener(c, (p) => {
+          o.addEventListener(l, (p) => {
             const y = d.length > 0 ? I(d, t) : [];
-            O.publish(l, {
+            L.publish(c, {
               event: p,
               target: o,
               args: y
             }, h);
           });
         } else {
-          const [l, ...u] = a.split(":"), d = t[l || ""] || t.handlers?.[l || ""];
+          const [c, ...u] = a.split(":"), d = t[c || ""] || t.handlers?.[c || ""];
           if (typeof d == "function") {
             const h = I(u, t);
-            o.addEventListener(c, (p) => {
+            o.addEventListener(l, (p) => {
               d.call(t, o, p, ...h);
             });
           }
         }
         o.removeAttribute(i);
-      } else i === "data-bind" && (a.split(";").map((c) => c.trim()).filter(Boolean).forEach((c) => {
-        const [l = "", ...u] = c.split(":").map((w) => w.trim()), d = u.join(":"), h = I(u, t), [p, y] = l.includes(".") ? l.split(".") : [l, null], S = {
+      } else i === "data-bind" && (a.split(";").map((l) => l.trim()).filter(Boolean).forEach((l) => {
+        const [c = "", ...u] = l.split(":").map((w) => w.trim()), d = u.join(":"), h = I(u, t), [p, y] = c.includes(".") ? c.split(".") : [c, null], S = {
           element: o,
           type: p,
           prop: y,
@@ -474,12 +474,12 @@ async function J(e, t) {
     r.removeAttribute("data-component");
     const a = r.className.trim();
     i.init?.({ parent: r });
-    const c = i.render();
-    if (c && (Q.bind(i, c), c.id || c.setAttribute("id", r.id), c.setAttribute(o, ""), a)) {
-      const l = a.split(/\s+/).filter((u) => u.length > 0);
-      c.classList.add(...l);
+    const l = i.render();
+    if (l && (Q.bind(i, l), l.id || l.setAttribute("id", r.id), l.setAttribute(o, ""), a)) {
+      const c = a.split(/\s+/).filter((u) => u.length > 0);
+      l.classList.add(...c);
     }
-    r.replaceWith(c || document.createComment(`Component ${o} rendered an empty element`)), i.mounted?.();
+    r.replaceWith(l || document.createComment(`Component ${o} rendered an empty element`)), i.mounted?.();
   }
 }
 function x(e, t) {
@@ -491,8 +491,8 @@ function x(e, t) {
     let i = [];
     if (s.startsWith("[") && s.endsWith("]")) try {
       i = JSON.parse(s.replace(/'/g, '"'));
-    } catch (l) {
-      console.error("Error parseando array estático en data-each:", l);
+    } catch (c) {
+      console.error("Error parseando array estático en data-each:", c);
     }
     else i = C(s, t) || [];
     const a = n.innerHTML.replaceAll("~", "|");
@@ -500,17 +500,17 @@ function x(e, t) {
       n.appendChild(document.createComment(`anchor:each-${s}`));
       return;
     }
-    const c = document.createDocumentFragment();
-    i.forEach((l, u) => {
-      if (l instanceof Node) {
-        c.appendChild(l);
+    const l = document.createDocumentFragment();
+    i.forEach((c, u) => {
+      if (c instanceof Node) {
+        l.appendChild(c);
         return;
       }
       const d = Object.create(t);
-      d[r || ""] = l, d.index = u, d["#"] = t;
+      d[r || ""] = c, d.index = u, d["#"] = t;
       const h = oe(a, d, !1);
-      for (De(h, d), x(h, d); h.firstChild; ) c.appendChild(h.firstChild);
-    }), n.appendChild(c);
+      for (De(h, d), x(h, d); h.firstChild; ) l.appendChild(h.firstChild);
+    }), n.appendChild(l);
   });
 }
 function de(e) {
@@ -579,10 +579,10 @@ var Q = class W {
     this.isInitializing = !0, Object.assign(this.state, t), this.isInitializing = !1, n && this.update("state");
   }
   publish(t, n) {
-    O.publish(t, n, this.instanceId);
+    L.publish(t, n, this.instanceId);
   }
   subscribe(t, n) {
-    const r = O.subscribe(t, n, this.instanceId);
+    const r = L.subscribe(t, n, this.instanceId);
     this.addCleanup(r);
   }
   addCleanup(t) {
@@ -629,17 +629,17 @@ var Q = class W {
     const n = t.parent, r = this, o = this.ctx;
     Array.from(n.attributes).forEach((s) => {
       if (!s.name.startsWith("(") || !s.name.endsWith(")")) return;
-      const i = s.name.slice(1, -1).replace(/-([a-z])/g, (d, h) => h.toUpperCase()), a = s.value.trim(), c = a.match(/^([\w\\.]+)\[(.+)\]$/);
-      let l;
-      if (c) {
-        const [, d, h] = c, p = C(d, o);
-        l = {
+      const i = s.name.slice(1, -1).replace(/-([a-z])/g, (d, h) => h.toUpperCase()), a = s.value.trim(), l = a.match(/^([\w\\.]+)\[(.+)\]$/);
+      let c;
+      if (l) {
+        const [, d, h] = l, p = C(d, o);
+        c = {
           Map: () => p.get(h),
           Set: () => Array.from(p)[Number(h)],
           Default: () => p?.[h || ""]
         }[p instanceof Map ? "Map" : p instanceof Set ? "Set" : "Default"]();
       }
-      const u = l || o[a] || C(a, o);
+      const u = c || o[a] || C(a, o);
       if (typeof u == "function") {
         r[i] = u.bind(this.ctx), this.addCleanup(() => {
           r[i] = void 0;
@@ -672,15 +672,15 @@ var Q = class W {
   bind(t) {
     return W.bind(this, t);
   }
-}, je = /* @__PURE__ */ T({ useState: () => he });
+}, je = /* @__PURE__ */ R({ useState: () => he });
 function he(e) {
   const t = {}, n = new Proxy(e, {
     get(s, i) {
       return s[i];
     },
     set(s, i, a) {
-      const c = i;
-      return s[c] === a || (s[c] = a, t[c]?.forEach((l) => l(a))), !0;
+      const l = i;
+      return s[l] === a || (s[l] = a, t[l]?.forEach((c) => c(a))), !0;
     }
   });
   return {
@@ -743,15 +743,15 @@ var pe = class extends Q {
     `, !0);
   }
 };
-function ft(e) {
+function ht(e) {
   const t = () => {
-    "lucideIcons" in window && le(window.lucideIcons), $("clock-component", pe), $("progress-bar-component", me), (e ? Array.isArray(e) ? e : [e] : []).forEach((r) => r()), document.body.style.visibility = "visible", ie();
+    "lucideIcons" in window && ce(window.lucideIcons), $("clock-component", pe), $("progress-bar-component", me), (e ? Array.isArray(e) ? e : [e] : []).forEach((r) => r()), document.body.style.visibility = "visible", ie();
   };
   document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", t, { once: !0 }) : t();
   const n = localStorage.getItem("theme");
   (n === "dark" || !n && window.matchMedia("(prefers-color-scheme: dark)").matches) && document.documentElement.classList.add("dark");
 }
-var dt = class {
+var pt = class {
   portalElement;
   triggerElement;
   options;
@@ -804,16 +804,16 @@ var dt = class {
     }
     const a = r - e.bottom < t && e.top > t;
     this.portalElement.style.minWidth = `${this.triggerElement.offsetWidth}px`;
-    let c = i === "top-end" || e.left + n > o && e.right > n ? e.right - n : e.left;
-    const l = s, u = Math.max(l, o - n - s);
-    c = Math.min(Math.max(c, l), u), this.portalElement.style.left = `${c}px`, a ? (this.portalElement.style.top = `${e.top - t - s}px`, this.portalElement.classList.add("origin-bottom")) : (this.portalElement.style.top = `${e.bottom + s}px`, this.portalElement.classList.remove("origin-bottom"));
+    let l = i === "top-end" || e.left + n > o && e.right > n ? e.right - n : e.left;
+    const c = s, u = Math.max(c, o - n - s);
+    l = Math.min(Math.max(l, c), u), this.portalElement.style.left = `${l}px`, a ? (this.portalElement.style.top = `${e.top - t - s}px`, this.portalElement.classList.add("origin-bottom")) : (this.portalElement.style.top = `${e.bottom + s}px`, this.portalElement.classList.remove("origin-bottom"));
   }
   updatePositionSide(e, t, n, r, o, s, i) {
-    const a = r - e.right, c = i === "right-start" ? a >= t + s : e.left < t + s;
-    let l;
-    c ? l = e.right + s : l = e.left - t - s, l = Math.min(Math.max(l, s), r - t - s);
+    const a = r - e.right, l = i === "right-start" ? a >= t + s : e.left < t + s;
+    let c;
+    l ? c = e.right + s : c = e.left - t - s, c = Math.min(Math.max(c, s), r - t - s);
     let u = e.top;
-    u + n > o - s && (u = o - n - s), u = Math.max(u, s), this.portalElement.style.left = `${l}px`, this.portalElement.style.top = `${u}px`;
+    u + n > o - s && (u = o - n - s), u = Math.max(u, s), this.portalElement.style.left = `${c}px`, this.portalElement.style.top = `${u}px`;
   }
   updatePositionTooltip() {
     const e = this.triggerElement.getBoundingClientRect(), t = this.portalElement.offsetHeight, n = this.portalElement.offsetWidth, r = window.innerHeight, o = window.innerWidth, s = this.options.offset ?? 6, i = this.options.placement ?? "top", a = {
@@ -821,12 +821,12 @@ var dt = class {
       bottom: r - e.bottom,
       left: e.left,
       right: o - e.right
-    }, c = {
+    }, l = {
       top: "bottom",
       bottom: "top",
       left: "right",
       right: "left"
-    }, l = i.split("-")[0], u = a[l] >= t + s ? l : c[l], d = e.left + e.width / 2 - n / 2, h = e.top + e.height / 2 - t / 2;
+    }, c = i.split("-")[0], u = a[c] >= t + s ? c : l[c], d = e.left + e.width / 2 - n / 2, h = e.top + e.height / 2 - t / 2;
     let p, y;
     switch (u) {
       case "top":
@@ -856,20 +856,20 @@ var dt = class {
     }
     r && this.options.onClickInside?.(e);
   };
-}, $e = /* @__PURE__ */ T({
-  accentNumericComparer: () => qe,
+}, $e = /* @__PURE__ */ R({
+  accentNumericComparer: () => Ge,
   buildSorter: () => be,
   clone: () => Ke,
   createMap: () => We,
   debounce: () => Ve,
-  formatNumber: () => Ge,
+  formatNumber: () => qe,
   getSafeFormData: () => Be,
   getUniqueValues: () => Ue,
   getUniqueValuesSorted: () => ye,
   getValueByPath: () => ge,
   groupByNested: () => ze,
   hasOwnProperty: () => Je,
-  normalizeNFD: () => q,
+  normalizeNFD: () => G,
   toDate: () => Ze,
   toMap: () => Xe,
   toSet: () => Ye,
@@ -891,13 +891,13 @@ function ge(e, t) {
   }
   return n;
 }
-function qe(e, t) {
+function Ge(e, t) {
   return e.localeCompare(t, void 0, {
     sensitivity: "accent",
     numeric: !0
   });
 }
-var q = (e) => e.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(), Ge = (e, t = "es") => new Intl.NumberFormat(t).format(e);
+var G = (e) => e.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(), qe = (e, t = "es") => new Intl.NumberFormat(t).format(e);
 function Ue(e, t) {
   return [...new Set(e.map((n) => n[t]))];
 }
@@ -927,12 +927,12 @@ function ze(e, ...t) {
 function be(e, t = "asc") {
   const n = t === "asc" ? 1 : -1, r = (o) => o === void 0 ? 0 : o === null ? 1 : o === "" ? 2 : 3;
   return (o, s) => {
-    const i = o[e], a = s[e], c = r(i) - r(a);
-    if (c !== 0) return c * n;
+    const i = o[e], a = s[e], l = r(i) - r(a);
+    if (l !== 0) return l * n;
     if (typeof i == "boolean" && typeof a == "boolean") return (Number(i) - Number(a)) * n;
     if (typeof i == "number" && typeof a == "number") return (i - a) * n;
-    const l = q(String(i)), u = q(String(a));
-    return l.localeCompare(u, void 0, {
+    const c = G(String(i)), u = G(String(a));
+    return c.localeCompare(u, void 0, {
       sensitivity: "base",
       numeric: !0
     }) * n;
@@ -972,20 +972,20 @@ function Ze(e) {
     if (!t) return null;
     const [r, o, s] = t.split("/").map(Number);
     if (!r || !o || !s) return null;
-    let i = 0, a = 0, c = 0, l = 0;
+    let i = 0, a = 0, l = 0, c = 0;
     if (n) {
       const [d, h, p] = n.split(":");
       if (i = ~~(d || 0), a = ~~(h || 0), p) {
         const y = p.split(".");
-        c = ~~(y[0] || 0), l = ~~(y[1] || 0);
+        l = ~~(y[0] || 0), c = ~~(y[1] || 0);
       }
     }
-    const u = new Date(s, o - 1, r, i, a, c, l);
+    const u = new Date(s, o - 1, r, i, a, l, c);
     return Number.isNaN(u.getTime()) ? null : u;
   }
   return null;
 }
-var G = "VanillaLib2026:", j = (e) => G + e, et = {
+var q = "VanillaLib2026:", j = (e) => q + e, et = {
   writeValue: function(e, t) {
     try {
       localStorage.setItem(j(e), JSON.stringify({ value: t }));
@@ -1008,7 +1008,7 @@ var G = "VanillaLib2026:", j = (e) => G + e, et = {
     try {
       for (let n = 0; n < localStorage.length; n++) {
         const r = localStorage.key(n);
-        if (r && r.startsWith(G)) {
+        if (r && r.startsWith(q)) {
           const o = localStorage.getItem(r);
           if (o) try {
             const s = JSON.parse(o), i = r.substring(15);
@@ -1036,7 +1036,7 @@ var G = "VanillaLib2026:", j = (e) => G + e, et = {
       const e = [];
       for (let t = 0; t < localStorage.length; t++) {
         const n = localStorage.key(t);
-        n && n.startsWith(G) && e.push(n);
+        n && n.startsWith(q) && e.push(n);
       }
       e.forEach((t) => {
         localStorage.removeItem(t);
@@ -1051,8 +1051,8 @@ async function tt(e, t, n, r) {
   try {
     const o = await e();
     if (!o.ok) {
-      const c = await o.json().catch(() => null), l = `${o.status} ${o.statusText}${c?.error?.message ? ` - ${c.error.message}` : ""}`;
-      return console.error(`[ERROR] ${n ?? "Fetching"}:`, l), "API error: " + l;
+      const l = await o.json().catch(() => null), c = `${o.status} ${o.statusText}${l?.error?.message ? ` - ${l.error.message}` : ""}`;
+      return console.error(`[ERROR] ${n ?? "Fetching"}:`, c), "API error: " + c;
     }
     const s = await o.json().catch(() => null);
     let i = s;
@@ -1080,52 +1080,52 @@ function nt(e, t, n = "GET") {
 }
 function rt() {
   let e, t, n, r, o, s = "GET", i, a;
-  const c = {};
+  const l = {};
   return {
-    useBase(l) {
-      return e = l, this;
+    useBase(c) {
+      return e = c, this;
     },
-    useProperty(l) {
-      return t = l, this;
+    useProperty(c) {
+      return t = c, this;
     },
-    useLog(l) {
-      return r = l, this;
+    useLog(c) {
+      return r = c, this;
     },
-    usePayload(l) {
-      return o = l, this;
+    usePayload(c) {
+      return o = c, this;
     },
-    useTransform(l) {
-      return i = l, this;
+    useTransform(c) {
+      return i = c, this;
     },
-    getFrom(l) {
-      return n = l, s = "GET", this;
+    getFrom(c) {
+      return n = c, s = "GET", this;
     },
-    postTo(l) {
-      return n = l, s = "POST", this;
+    postTo(c) {
+      return n = c, s = "POST", this;
     },
-    putTo(l) {
-      return n = l, s = "PUT", this;
+    putTo(c) {
+      return n = c, s = "PUT", this;
     },
-    patchTo(l) {
-      return n = l, s = "PATCH", this;
+    patchTo(c) {
+      return n = c, s = "PATCH", this;
     },
-    deleteFrom(l) {
-      return n = l, s = "DELETE", this;
+    deleteFrom(c) {
+      return n = c, s = "DELETE", this;
     },
-    useToken(l) {
-      return a = l, this;
+    useToken(c) {
+      return a = c, this;
     },
-    withHeader(l, u) {
-      return c[l] = u, this;
+    withHeader(c, u) {
+      return l[c] = u, this;
     },
     async invoke() {
       if (!n) throw new Error("Target endpoint not defined. Use .getFrom(), .postTo(), etc.");
-      const { url: l, payload: u, method: d } = nt((e || "") + n, o, s), h = {
+      const { url: c, payload: u, method: d } = nt((e || "") + n, o, s), h = {
         "Content-Type": "application/json",
         ...a ? { Authorization: `Bearer ${a}` } : {},
-        ...c
+        ...l
       }, p = u instanceof URLSearchParams || u instanceof FormData ? u : u ? JSON.stringify(u) : void 0;
-      return tt(() => fetch(l, {
+      return tt(() => fetch(c, {
         method: d,
         headers: h,
         body: p
@@ -1152,10 +1152,10 @@ function X(e, t) {
         n[r].distinct = ye(s.map((a) => a));
         break;
       case "sum":
-        n[r].sum = s.reduce((a, c) => a + c, 0);
+        n[r].sum = s.reduce((a, l) => a + l, 0);
         break;
       case "avg":
-        n[r].avg = s.length ? s.reduce((a, c) => a + c, 0) / s.length : 0;
+        n[r].avg = s.length ? s.reduce((a, l) => a + l, 0) / s.length : 0;
         break;
       case "min":
         n[r].min = Math.min(...s);
@@ -1165,8 +1165,8 @@ function X(e, t) {
         break;
       case "median":
         {
-          const a = [...s].sort((l, u) => l - u), c = Math.floor(a.length / 2);
-          n[r].median = a.length % 2 ? a[c] : (a[c - 1] + a[c]) / 2;
+          const a = [...s].sort((c, u) => c - u), l = Math.floor(a.length / 2);
+          n[r].median = a.length % 2 ? a[l] : (a[l - 1] + a[l]) / 2;
         }
         break;
     }
@@ -1190,7 +1190,7 @@ var it = {};
 function at(e) {
   return it[e];
 }
-var lt = class {
+var ct = class {
   generateReport(e, t, n) {
     const r = {
       recordCount: 0,
@@ -1206,14 +1206,14 @@ var lt = class {
         if (m < d) return;
         const { id: E, name: g, current: b, definition: v } = f;
         if (v.valueProvider) {
-          const N = m == w.length - 1, { key: _ } = v, A = {
+          const O = m == w.length - 1, { key: _ } = v, A = {
             kind: "GroupHeaderRenderContext",
             id: E,
             name: g,
             key: _,
             current: b,
             dataSet: o,
-            isLastGroup: N
+            isLastGroup: O
           };
           n.send(v.valueProvider(A, _));
         }
@@ -1221,19 +1221,19 @@ var lt = class {
     }, i = (f) => {
       const m = w.map((E) => E);
       f && m.splice(0, f), m.reverse().forEach((E, g) => {
-        const b = g == w.length - 1, { id: v, name: N, current: _, definition: A } = E, { key: k } = A, R = r[N];
+        const b = g == w.length - 1, { id: v, name: O, current: _, definition: A } = E, { key: k } = A, P = r[O];
         if (A.footerValueProvider) {
-          const L = R.all[_];
-          if (L) {
-            L.summary = X(L.records, h);
-            const { records: P, recordCount: D, key: ve, summary: Ee } = L, we = {
+          const N = P.all[_];
+          if (N) {
+            N.summary = X(N.records, h);
+            const { records: T, recordCount: D, key: ve, summary: Ee } = N, we = {
               kind: "GroupFooterRenderContext",
               id: v,
-              name: N,
+              name: O,
               key: k,
               current: _,
               data: {
-                records: P,
+                records: T,
                 recordCount: D,
                 key: ve,
                 summary: Ee
@@ -1248,31 +1248,31 @@ var lt = class {
     }, a = () => {
       S.forEach((f) => {
         if (f.valueProvider) {
-          const { recordCount: m, dataSet: E, isLastRow: g, isLastRowInGroup: b, percent: v, previous: N, data: _ } = r, A = w[w.length - 1], k = A?.name;
-          let R = 0;
-          k && (R = r[k].all[A?.current || ""]?.recordCount || 0);
-          const L = {
+          const { recordCount: m, dataSet: E, isLastRow: g, isLastRowInGroup: b, percent: v, previous: O, data: _ } = r, A = w[w.length - 1], k = A?.name;
+          let P = 0;
+          k && (P = r[k].all[A?.current || ""]?.recordCount || 0);
+          const N = {
             kind: "DetailRenderContext",
             id: f.id,
             data: _,
-            previous: N,
+            previous: O,
             dataSet: E,
             recordCount: m,
-            groupRecordCount: R,
+            groupRecordCount: P,
             percent: v,
             isLastRow: g,
             isLastRowInGroup: b
           };
-          return n.send(f.valueProvider(L));
+          return n.send(f.valueProvider(N));
         }
       });
-    }, c = () => {
+    }, l = () => {
       y.forEach((f) => {
         if (f.valueProvider) {
-          const { id: m } = f, { recordCount: E, dataSet: g, isLastRow: b, isLastRowInGroup: v, percent: N, previous: _, data: A } = r, k = w.reduce((L, P) => {
-            const D = P.name;
-            return L[P.name] = r[D].all, L;
-          }, {}), R = {
+          const { id: m } = f, { recordCount: E, dataSet: g, isLastRow: b, isLastRowInGroup: v, percent: O, previous: _, data: A } = r, k = w.reduce((N, T) => {
+            const D = T.name;
+            return N[T.name] = r[D].all, N;
+          }, {}), P = {
             kind: "TotalRenderContext",
             id: m,
             data: A,
@@ -1280,15 +1280,15 @@ var lt = class {
             dataSet: g,
             grandTotal: X(o, h),
             recordCount: E,
-            percent: N,
+            percent: O,
             isLastRow: b,
             isLastRowInGroup: v,
             ...k
           };
-          return n.send(f.valueProvider(R));
+          return n.send(f.valueProvider(P));
         }
       });
-    }, l = () => {
+    }, c = () => {
       p.forEach((f) => {
         if (f.valueProvider) {
           const m = w.length > 0, E = {
@@ -1350,7 +1350,7 @@ var lt = class {
       f.current = o && o[0] && m[f.definition.key] || "";
       const E = f.name;
       r[E] = { all: {} };
-    }), e.onStartfn && e.onStartfn(r), l(), o.length > 0 && s(), o.forEach((f) => {
+    }), e.onStartfn && e.onStartfn(r), c(), o.length > 0 && s(), o.forEach((f) => {
       if (r.recordCount++, r.isLastRow = o.length === r.recordCount, r.isLastRowInGroup = r.isLastRow, r.percent = r.recordCount / o.length * 100, r.previous = r.data || f, r.data = f, e.onRowfn && e.onRowfn(r), w.every((m) => m.test(f)) ? w.forEach((m) => {
         m.sum(f);
       }) : (w.some((m, E) => m.test(f) ? !1 : (d = E, i(d), w.forEach((g, b) => {
@@ -1363,25 +1363,25 @@ var lt = class {
         });
       }
       a();
-    }), o.length > 0 && (r.previous = r.data, i()), c(), n.flush && n.flush(), e.state = r;
+    }), o.length > 0 && (r.previous = r.data, i()), l(), n.flush && n.flush(), e.state = r;
   }
   loadFromText(e) {
     return new Function(e + `
 ; return reportDefinition;`)();
   }
   async loadExternalReport(e) {
-    O.publish("APP_CONFIG.messages.httpClient.loading");
+    L.publish("APP_CONFIG.messages.httpClient.loading");
     const t = await (await fetch(e)).text();
-    return O.publish("APP_CONFIG.messages.httpClient.loaded"), this.loadFromText(t);
+    return L.publish("APP_CONFIG.messages.httpClient.loaded"), this.loadFromText(t);
   }
   async loadRegisteredReport(e) {
     const t = at(e);
     if (!t) throw new Error(`Report not found: ${e}`);
     return (await t()).reportDefinition;
   }
-}, ct = class {
+}, lt = class {
   createEngine() {
-    return new lt();
+    return new ct();
   }
   generateReport(e, t, n) {
     this.createEngine().generateReport(e, t, n);
@@ -1435,35 +1435,59 @@ var lt = class {
       s && o.replaceWith(s);
     });
   }
-}, ht = Ne, pt = Ie, mt = Ce, gt = $e, yt = Te, bt = {
+}, ft = class {
+  show(e, t, n = "") {
+    L.publish("APP_CONFIG.messages.app.showNotification", {
+      message: e,
+      autoCloseMs: t,
+      type: n
+    });
+  }
+  success(e, t = 4e3) {
+    this.show(e, t, "success");
+  }
+  info(e, t = 4e3) {
+    this.show(e, t, "info");
+  }
+  warning(e, t = 6e3) {
+    this.show(e, t, "warning");
+  }
+  error(e, t = 8e3) {
+    this.show(e, t, "error");
+  }
+  close(e) {
+    L.publish("APP_CONFIG.messages.app.closeNotification", e);
+  }
+}, dt = new ft(), mt = Le, gt = Ie, yt = Ce, bt = $e, vt = Re, Et = {
   ...je,
   storage: et
-}, vt = {
+}, wt = {
   RQ: st,
-  pubSub: O,
-  ReportEngineService: ct,
-  DefaultMediator: ut
-}, Et = {
+  pubSub: L,
+  ReportEngineService: lt,
+  DefaultMediator: ut,
+  notificationService: dt
+}, Ct = {
   ClockComponent: pe,
   ProgressBarComponent: me
 };
 export {
   Q as BaseComponent,
-  Et as Components,
-  dt as FloatingPortal,
+  Ct as Components,
+  pt as FloatingPortal,
   oe as buildAndInterpolate,
-  ht as dom,
-  pt as hydrate,
+  mt as dom,
+  gt as hydrate,
   xe as hydrateElement,
-  yt as icons,
-  ft as initApp,
-  O as pubSub,
+  vt as icons,
+  ht as initApp,
+  L as pubSub,
   $ as registerComponent,
   M as resolveBindingValue,
-  vt as services,
-  bt as state,
-  mt as template,
-  gt as utils
+  wt as services,
+  Et as state,
+  yt as template,
+  bt as utils
 };
 
 //# sourceMappingURL=vanilla-reactive.es.js.map

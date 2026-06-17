@@ -16,9 +16,9 @@
   const { pubSub } = VanillaReactive.services;
 
   // Message topics (can be customized via window.APP_MESSAGES)
-  const MESSAGES = (window.APP_MESSAGES && window.APP_MESSAGES.app) || {
-    showNotification: 'app-show-notification',
-    closeNotification: 'app-close-notification',
+  const MESSAGES = {
+    showNotification: 'APP_CONFIG.messages.app.showNotification',
+    closeNotification: 'APP_CONFIG.messages.app.closeNotification',
   };
 
   const POSITION_CLASS_MAP = {
@@ -139,7 +139,7 @@
         >
           <button
             data-close-btn
-            on-click="publish:app-close-notification:global:@notification.id"
+            on-click="publish:APP_CONFIG.messages.app.closeNotification:global:@notification.id"
             class="
               group absolute top-3 right-3 w-8 h-8 flex items-center justify-center
               rounded-md
@@ -212,6 +212,6 @@
     }
   }
 
-  registerComponent('app-notification-panel', NotificationPanel);
+  registerComponent('notification-panel-component', NotificationPanel);
 
 }());
