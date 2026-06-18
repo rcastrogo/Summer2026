@@ -65,11 +65,11 @@ function C(e, t) {
   const n = e.split("|").map((a) => a.trim()), r = n.shift() || "", o = n;
   if (r.startsWith("t:")) {
     const [a, ...l] = r.slice(2).split(":");
-    return o.unshift("t"), o[0] += ":" + l.join(":"), H(o, a, t);
+    return o.unshift("t"), o[0] += ":" + l.join(":"), j(o, a, t);
   }
   if (r.startsWith("'") && r.endsWith("'")) {
     const [a, ...l] = r.slice(1, -1).split(":");
-    return o.unshift("t"), o[0] += ":" + l.join(":"), H(o, a, t);
+    return o.unshift("t"), o[0] += ":" + l.join(":"), j(o, a, t);
   }
   const s = ((r || "").replace(/{([^{}]+)}/g, (a, l) => C(l.trim(), t)) || "").split(/\.|\[|\]/).filter((a) => a !== "");
   let i = t || self;
@@ -81,7 +81,7 @@ function C(e, t) {
       i = void 0;
       break;
     }
-    return H(o, i, t);
+    return j(o, i, t);
   }
 }
 function Ae(e, t) {
@@ -94,7 +94,7 @@ function Ae(e, t) {
   }
   return n.push(r.trim()), n;
 }
-function H(e, t, n) {
+function j(e, t, n) {
   return e.reduce((r, o) => {
     const [s, ...i] = Ae(o, ":"), a = C(s, n) || Z[s || ""];
     if (typeof a == "function") {
@@ -539,7 +539,7 @@ function de(e) {
 function De(e, t) {
   e.firstElementChild && (e.firstElementChild.__localCtx__ = t);
 }
-function He(e) {
+function je(e) {
   let t = e;
   for (; t; ) {
     const n = t.__localCtx__;
@@ -557,7 +557,7 @@ function M(e, t) {
     n(e.element, o);
     return;
   }
-  const s = He(e.element), i = C(r, s);
+  const s = je(e.element), i = C(r, s);
   n(e.element, i);
 }
 var Q = class W {
@@ -672,7 +672,7 @@ var Q = class W {
   bind(t) {
     return W.bind(this, t);
   }
-}, je = /* @__PURE__ */ R({ useState: () => he });
+}, He = /* @__PURE__ */ R({ useState: () => he });
 function he(e) {
   const t = {}, n = new Proxy(e, {
     get(s, i) {
@@ -985,10 +985,10 @@ function Ze(e) {
   }
   return null;
 }
-var q = "VanillaLib2026:", j = (e) => q + e, et = {
+var q = "VanillaLib2026:", H = (e) => q + e, et = {
   writeValue: function(e, t) {
     try {
-      localStorage.setItem(j(e), JSON.stringify({ value: t }));
+      localStorage.setItem(H(e), JSON.stringify({ value: t }));
     } catch (n) {
       console.error(`StorageUtil.writeValue error [${e}]:`, n);
     }
@@ -996,7 +996,7 @@ var q = "VanillaLib2026:", j = (e) => q + e, et = {
   },
   readValue: function(e, t) {
     try {
-      const n = localStorage.getItem(j(e));
+      const n = localStorage.getItem(H(e));
       if (n) return JSON.parse(n).value;
     } catch (n) {
       console.error(`StorageUtil.readValue error [${e}]:`, n);
@@ -1025,7 +1025,7 @@ var q = "VanillaLib2026:", j = (e) => q + e, et = {
   },
   removeValue: function(e) {
     try {
-      localStorage.removeItem(j(e));
+      localStorage.removeItem(H(e));
     } catch (t) {
       console.error(`StorageUtil.removeValue error [${e}]:`, t);
     }
@@ -1054,13 +1054,13 @@ async function tt(e, t, n, r) {
       const l = await o.json().catch(() => null), c = `${o.status} ${o.statusText}${l?.error?.message ? ` - ${l.error.message}` : ""}`;
       return console.error(`[ERROR] ${n ?? "Fetching"}:`, c), "API error: " + c;
     }
-    const s = await o.json().catch(() => null);
-    let i = s;
-    t && i[t] && (i = i[t]);
+    const s = o.headers.get("content-type");
+    let i;
+    s && s.includes("application/json") ? i = await o.json().catch(() => null) : i = await o.text(), t && i && typeof i == "object" && i[t] && (i = i[t]);
     const a = r ? r(i) : i;
     return {
       success: !0,
-      message: s?.message ?? "Request successful",
+      message: typeof i == "object" && i?.message ? i.message : "Request successful",
       data: a
     };
   } catch (o) {
@@ -1459,7 +1459,7 @@ var ct = class {
     L.publish("APP_CONFIG.messages.app.closeNotification", e);
   }
 }, dt = new ft(), mt = Le, gt = Ie, yt = Ce, bt = $e, vt = Re, Et = {
-  ...je,
+  ...He,
   storage: et
 }, wt = {
   RQ: st,

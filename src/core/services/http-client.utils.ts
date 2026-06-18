@@ -80,11 +80,18 @@ export async function wrappedFetch<T>(
 
     // Safely parse the JSON response. If parsing fails (e.g., invalid JSON or empty body),
     // return null instead of throwing an exception.
-    const json = await response.json().catch(() => null);
+    const contentType = response.headers.get('content-type');
+    let data;
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json().catch(() => null);
+    } else {
+      data = await response.text();
+    }    
     // Normalize the API response shape. Some endpoints wrap results inside a "target" field,
     // e.g., { target: {...} }. Use that if available; otherwise, use the raw JSON object.
-    let data = json;
-    if(target && data[target]) data = data[target];
+    if (target && data && typeof data === 'object' && data[target]) {
+      data = data[target];
+    }
 
     // Optionally process or transform the normalized data using a custom callback.
     // If no processor is provided, cast the result to the expected generic type T.
@@ -92,7 +99,7 @@ export async function wrappedFetch<T>(
 
     return {
       success: true,
-      message: json?.message ?? 'Request successful',
+      message: (typeof data === 'object' && data?.message) ? data.message : 'Request successful',
       data: processed,
     };
   } catch (error: unknown) {

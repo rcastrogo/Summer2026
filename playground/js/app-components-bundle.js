@@ -1,5 +1,5 @@
 // Auto-generated bundle - Do not edit manually
-// Generated: 2026-06-17T05:25:18.453Z
+// Generated: 2026-06-18T12:40:33.395Z
 (function(){if(!VanillaReactive){console.error("VanillaReactive no está definido.");return}const{BaseComponent,buildAndInterpolate,registerComponent}=VanillaReactive;class CollapsibleComponent extends BaseComponent{constructor(ctx){super(ctx)}init(ctx){super.init(ctx),this.setState({expanded:this.props.expanded==="true"||!1,title:this.props.title||"Texto por defecto"})}toggle(){console.log(this.children.length),this.state.expanded=!this.state.expanded}render(changedProp){return changedProp&&this.element?(this.updateBindings(),this.element):buildAndInterpolate(`
         <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-300 dark:border-slate-800 dark:bg-slate-900">
           <button 

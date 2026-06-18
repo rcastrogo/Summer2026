@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playground - Icons</title>
+  <script src="https://cdn.tailwindcss.com/3.4.15"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
+  <script src="js/icons.js"></script>
+  <script src="js/icon-list.js"></script>
+  <script src="js/vanilla-reactive.iife.js"></script>
+  <script src="js/app-components-bundle.js"></script>
+  <script src="js/app-components/samples/notification-panel.component.js"></script>
+
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    body {
+      visibility: hidden;
+    }
+  </style>
+
+  <script>
+
+    const { $ } = VanillaReactive.dom;
+    const { debounce } = VanillaReactive.utils;
+    const { services } = VanillaReactive;
+    const { getValue } = VanillaReactive.template;
+
+    function initAll() {
+
+      const gridContainer = $('#icon-grid-container').one();
+      const searchInputfn = (el, e) => renderGrid(e.target.value);
+
+      const ctx = {
+        selecteds: new Map(),
+        iconList: iconList,
+        filteredIconList: iconList,
+        searchInput: debounce(searchInputfn, 400),
+        countDisplay: '',
+        iconText: '',
+        javascript: '',
+        html: '',
+        updateBindings() {
+          this.bindings &&
+            this.bindings.forEach(binding => {
+              VanillaReactive.resolveBindingValue(binding, this);
+            });
+        },
+      };
+
+      function iconClick(el) {
+
+        const target = $('img', el).one();
+        const url = target ? target.src : null;
+        const bindingCtx = el.__localCtx__;
+        const iconName = getValue('icon.name', bindingCtx) || el.title;
+
+        if (iconName) {
+          if (ctx.selecteds.has(iconName)) {
+            ctx.selecteds.delete(iconName);
+            el.classList.remove('bg-blue-50/50', 'dark:bg-blue-900/20');
+            
+            ctx.iconText = '';
+            const iconsObj = Object.fromEntries(ctx.selecteds);
+            ctx.javascript = `var lucideIcons = ${JSON.stringify(iconsObj, null, 2)};`;
+
+            ctx.html = Object
+                .entries(iconsObj)
+                .map(([name, svg]) => `
+                  <div class="p-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                    ${svg}
+                  </div>`
+                ).join('\n');
+                
+            ctx.updateBindings();
+
+            return;
+          }      
+          el.classList.add('bg-blue-50/50', 'dark:bg-blue-900/20');        
+        }
+
+        if (url) {
+          const req = services.RQ.create();
+          req.getFrom(url)
+            .invoke()
+            .then(response => {
+
+              const svgContent = response.data.replace(/\n/g, '');
+              ctx.selecteds.set(iconName, svgContent);
+              ctx.iconText = `${JSON.stringify({ [iconName]: svgContent })}\r${response.data}`;
+              const iconsObj = Object.fromEntries(ctx.selecteds);
+              ctx.javascript = `var lucideIcons = ${JSON.stringify(iconsObj, null, 2)};`;
+              ctx.html = Object
+                .entries(iconsObj)
+                .map(([name, svg]) => `
+                  <div class="p-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                    ${svg}
+                  </div>`
+                ).join('\n');
+
+              ctx.updateBindings();
+
+              navigator.clipboard
+                .writeText(ctx.iconText)
+                .then(() => {
+                  services.notificationService.show(
+                    `SVG copiado al portapapeles: ${el.title}`,
+                    2_000,
+                    'success'
+                  );
+                })
+                .catch(err => {
+                  console.error('Error al copiar al portapapeles:', err);
+                  services.notificationService.show(
+                    `Error al copiar al portapapeles: ${err}`,
+                    2_000,
+                    'error'
+                  );
+                });
+            })
+        }
+      }
+
+      function renderGrid(filter = '') {
+        // ===============================================================================
+        // Filter the icon list based on the search term
+        // ===============================================================================
+        const term = filter.toLowerCase();
+        const filtered = term ? iconList.filter(name => name.includes(term)) : iconList;
+        const data = filtered.map(
+          name => ({ name, selected: ctx.selecteds.has(name) })
+        );
+        // ===============================================================================
+        // Render the filtered icons in a grid layout
+        // ===============================================================================
+        const template = `
+          <div 
+            data-each="icon in icons" 
+            class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
+            <div 
+              class="flex flex-col items-center gap-2 p-3 rounded-lg bg-white dark:bg-gray-800 
+                border border-gray-200 dark:border-gray-700 hover:border-blue-400 
+                dark:hover:border-blue-500 
+                hover:shadow-md transition-all cursor-pointer group
+                @if(icon.selected) bg-blue-50/50 dark:bg-blue-900/20@endif
+                " 
+              title="{icon.name}"
+              on-click="iconClick"
+              >
+              <img 
+                src="images/icons/{icon.name}.svg" 
+                alt="{icon.name}" 
+                class="w-6 h-6 dark:invert opacity-70 group-hover:opacity-100 transition-opacity" 
+                loading="lazy" 
+              />
+              <span 
+                class="text-[10px] text-gray-500 dark:text-gray-400 text-center 
+                  leading-tight break-all 
+                  group-hover:text-gray-800 dark:group-hover:text-gray-200">
+                {icon.name}
+              </span>
+            </div>
+          </div>
+        `;
+        gridContainer.innerHTML = '';
+        gridContainer.appendChild(
+          VanillaReactive.buildAndInterpolate(template, {
+            icons: data,
+            iconClick
+          })
+        );
+        // ===============================================================================
+        // Update the count display
+        // ===============================================================================
+        ctx.countDisplay = `${filtered.length} de ${iconList.length} iconos`;
+        ctx.updateBindings();
+      }
+
+      VanillaReactive.hydrateElement(document.body, ctx);
+      setTimeout(() => renderGrid(), 500);
+
+    }
+
+    VanillaReactive.initApp([
+      initAll,
+    ]);
+
+  </script>
+
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors">
+  <div class="max-w-6xl mx-auto space-y-8 px-4">
+
+    <header>
+      <div data-component="header-component"></div>
+      <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">
+        <i data-icon="heart" class="size-10 inline-flex"></i>
+        Lucide icons
+      </h1>
+      <p class="text-gray-500 dark:text-gray-400 mt-2 border border-gray-200 dark:border-gray-700 rounded p-4">
+        Página para empaquetar y probar los iconos de Lucide. Puedes ver la lista completa de iconos en
+        <a href="https://lucide.dev/icons" target="_blank" rel="noopener noreferrer"
+          class="text-blue-600 dark:text-blue-400 hover:underline">
+          https://lucide.dev/icons
+        </a>.
+      </p>
+    </header>
+
+    <nav class="my-4 flex gap-3">
+      <a href="index.html" class="text-blue-600 dark:text-blue-400 hover:underline">Home</a>
+      <a href="reports.html" class="text-blue-600 dark:text-blue-400 hover:underline">Reports</a>
+      <a href="counter.html" class="text-blue-600 dark:text-blue-400 hover:underline">Counter</a>
+      <a href="table.html" class="text-blue-600 dark:text-blue-400 hover:underline">Table</a>
+    </nav>
+
+    <div>
+
+      <div class="flex items-center justify-between gap-4 mb-2">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Icon selector</h2>
+        <span data-bind="text:countDisplay" class="text-sm text-gray-500 dark:text-gray-400">
+        </span>
+      </div>
+
+      <div class="relative mb-2">
+        <i data-icon="search" class="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-gray-400"></i>
+        <input id="icon-search" on-input="searchInput" type="text" placeholder="Buscar iconos..."
+          class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+      </div>
+
+      <div class="min-h-[50vh]">
+        <div 
+          data-component="tab-component" 
+          data-selected="grid" 
+          data-variant="underline" 
+          class="mt-8">
+
+          <div data-id="grid" data-title="Lucide iconos" data-icon-name="user">
+            <div id="icon-grid-container" class="p-4">
+            </div>
+          </div>
+
+          <div data-id="texto" data-title="Texto" data-icon-name="user">
+            <pre 
+              data-bind="text:iconText;show:iconText"
+              class="bg-white dark:bg-gray-800 p-2 rounded-xl mt-2 text-xs overflow-x-auto whitespace-pre-wrap">
+            </pre>
+          </div>
+
+          <div data-id="json" data-title="JavaScript" data-icon-name="sun">
+            <pre 
+              data-bind="text:javascript;show:javascript"
+              class="bg-white dark:bg-gray-800 p-2 rounded-xl mt-2 text-xs overflow-x-auto">
+            </pre>
+          </div>
+
+          <div data-id="icons" data-title="Icons" data-icon-name="moon">
+            <div 
+              data-bind="html:html"
+              class="flex p-2 mt-2 gap-2 flex-wrap bg-white dark:bg-gray-800 rounded-xl text-xs overflow-x-auto">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div data-component="notification-panel-component" data-position="top-right"></div>
+  </div>
+
+</body>
+
+</html>
