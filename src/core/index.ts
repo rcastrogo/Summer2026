@@ -56,13 +56,15 @@ export const icons = _icons;
 /** State management: useState, storage */
 export const state = { ..._state, storage };
 
-/** HTTP client and PubSub */
+interface DialogService {}
+
 export const services = { RQ, pubSub, ReportEngineService, DefaultMediator, notificationService } as { 
   RQ: typeof RQ; 
   pubSub: typeof pubSub, 
   ReportEngineService: typeof ReportEngineService,
   DefaultMediator: typeof DefaultMediator,
-  notificationService: typeof notificationService
+  notificationService: typeof notificationService,
+  dialogService: DialogService;
 };
 
 // =============================================================================

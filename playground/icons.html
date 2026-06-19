@@ -16,6 +16,7 @@
   <script src="js/vanilla-reactive.iife.js"></script>
   <script src="js/app-components-bundle.js"></script>
   <script src="js/app-components/samples/notification-panel.component.js"></script>
+  <script src="js/app-components/samples/alert-component.js"></script>
 
   <link rel="stylesheet" href="css/app.css">
   <style>
@@ -65,7 +66,7 @@
       const iconsObj = Object.fromEntries(selecteds);
       const javascript = `var lucideIcons = ${JSON.stringify(iconsObj, null, 2)};`;
       const html = Object.entries(iconsObj).map(([, svg]) => `
-        <div class="p-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <div class="flex items-center justify-center p-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           ${svg}
         </div>`
       ).join('\n');
@@ -105,7 +106,22 @@
             VanillaReactive.resolveBindingValue(binding, this);
           });
         },
+        showDialog
       };
+
+      function showDialog(el) {
+        services
+          .dialogService
+          .showDialog(
+            {
+              message: `Has seleccionado ${ctx.selecteds.size} iconos.`,
+              autoCloseMs: 0,
+              title: 'Iconos seleccionados',
+              subTitle: 'Puedes copiar el contenido del portapapeles desde la pestaña "Texto" o "JavaScript".',
+              showConfirmButton: false,
+            }
+          );
+      }
 
       function iconClick(el) {
         const target = $('img', el).one();
@@ -186,11 +202,13 @@
       </p>
     </header>
 
-    <nav class="my-4 flex gap-3">
-      <a href="index.html" class="text-blue-600 dark:text-blue-400 hover:underline">Home</a>
-      <a href="reports.html" class="text-blue-600 dark:text-blue-400 hover:underline">Reports</a>
-      <a href="counter.html" class="text-blue-600 dark:text-blue-400 hover:underline">Counter</a>
-      <a href="table.html" class="text-blue-600 dark:text-blue-400 hover:underline">Table</a>
+    <nav class="my-2 flex gap-2">
+      <a href="index.html" class="app-button text-center text-blue-600 dark:text-blue-400 hover:underline">Home</a>
+      <a href="reports.html" class="app-button text-center text-blue-600 dark:text-blue-400 hover:underline">Reports</a>
+      <a href="counter.html" class="app-button text-center text-blue-600 dark:text-blue-400 hover:underline">Counter</a>
+      <a href="todo.html" class="app-button text-center text-blue-600 dark:text-blue-400 hover:underline">Todo List</a>
+      <a href="table.html" class="app-button text-center text-blue-600 dark:text-blue-400 hover:underline">Table</a>
+      <a href="dialogs.html" class="app-button text-center text-blue-600 dark:text-blue-400 hover:underline">Dialogs</a>
     </nav>
 
     <div>
@@ -202,7 +220,7 @@
       </div>
 
       <div class="relative mb-2">
-        <i data-icon="search" class="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-gray-400"></i>
+        <i data-icon="search" class="absolute left-3 mt-3 size-5 text-gray-400"></i>
         <input id="icon-search" on-input="searchInput" type="text" placeholder="Buscar iconos..."
           class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
       </div>
@@ -211,40 +229,45 @@
         <div 
           data-component="tab-component" 
           data-selected="grid" 
-          data-variant="underline" 
+          data-variant="boxed" 
           class="mt-8">
 
           <div data-id="grid" data-title="Lucide iconos" data-icon-name="palette">
-            <div id="icon-grid-container" class="p-4">
+            <div id="icon-grid-container" class="p-2 min-h-[50vh]">
             </div>
           </div>
 
           <div data-id="texto" data-title="Texto" data-icon-name="file-text">
             <pre 
-              data-bind="text:iconText;show:iconText"
-              class="bg-white dark:bg-gray-800 p-2 rounded-xl mt-2 text-xs overflow-x-auto whitespace-pre-wrap">
+              data-bind="text:iconText"
+              class="min-h-[50vh] p-2 rounded-xl mt-2 text-xs overflow-x-auto whitespace-pre-wrap">
             </pre>
           </div>
 
           <div data-id="json" data-title="JavaScript" data-icon-name="script">
             <pre 
-              data-bind="text:javascript;show:javascript"
-              class="bg-white dark:bg-gray-800 p-2 rounded-xl mt-2 text-xs overflow-x-auto">
+              data-bind="text:javascript"
+              class="min-h-[50vh] p-2 rounded-xl mt-2 text-xs overflow-x-auto">
             </pre>
           </div>
 
           <div data-id="icons" data-title="Icons" data-icon-name="tree-palm">
-            <div 
-              data-bind="html:html"
-              class="flex p-2 mt-2 gap-2 flex-wrap bg-white dark:bg-gray-800 rounded-xl text-xs overflow-x-auto">
-            </div>
+            <div class="min-h-[50vh] w-full p-2 mt-2 rounded-xl text-xs overflow-x-auto">
+              <div 
+                on-click="showDialog"
+                data-bind="html:html"
+                class="flex flex-wrap gap-2">
+              </div>
+            </div>  
           </div>
         </div>
       </div>
 
     </div>
-
-    <div data-component="notification-panel-component" data-position="top-right"></div>
+    <div 
+      data-component="notification-panel-component" 
+      data-position="top-right">
+    </div>
   </div>
 
 </body>

@@ -1,5 +1,5 @@
 // Auto-generated bundle - Do not edit manually
-// Generated: 2026-06-18T13:22:59.838Z
+// Generated: 2026-06-19T12:17:04.732Z
 (function(){if(!VanillaReactive){console.error("VanillaReactive no está definido.");return}const{BaseComponent,buildAndInterpolate,registerComponent}=VanillaReactive;class CollapsibleComponent extends BaseComponent{constructor(ctx){super(ctx)}init(ctx){super.init(ctx),this.setState({expanded:this.props.expanded==="true"||!1,title:this.props.title||"Texto por defecto"})}toggle(){console.log(this.children.length),this.state.expanded=!this.state.expanded}render(changedProp){return changedProp&&this.element?(this.updateBindings(),this.element):buildAndInterpolate(`
         <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-300 dark:border-slate-800 dark:bg-slate-900">
           <button 
@@ -119,7 +119,7 @@
           </div>
         </footer>
       `,this)}}registerComponent("footer-component",FooterComponent)})(),(function(){if(!VanillaReactive){console.error("VanillaReactive no está definido.");return}const{BaseComponent,buildAndInterpolate,registerComponent}=VanillaReactive;class HeaderComponent extends BaseComponent{constructor(ctx){super(ctx)}init(value){super.init(value)}render(){return buildAndInterpolate(`
-        <div class="bg-background flex-cols justify-center">
+        <div class="flex-cols justify-center">
           <a href="index.html">
             <image src="images/logo.png" alt="Logo" class="m-2 w-full object-contain">
           </a>

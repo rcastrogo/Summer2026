@@ -36,8 +36,6 @@
             border border-slate-200 dark:border-slate-800
             shadow-xl
             fixed
-            top-1/2 left-1/2
-            -translate-x-1/2 -translate-y-1/2
             p-2
             flex flex-col overflow-hidden animate-zoom-center
             rounded-lg
@@ -92,7 +90,8 @@
               <div class="flex group flex-1 min-h-0 overflow-y-auto items-center text-left">
                 {message}
               </div>
-            @else
+            @endif
+            @if(!icon)
               <div class="text-center w-full overflow-auto">
                 {message}
               </div>
@@ -153,6 +152,9 @@
       this.infoMessage = '';
       this.size = 'md';
       this.literals = ['Cerrar', 'Aceptar'];
+      this.onClose = undefined;
+      this.onCancel = undefined;
+      this.onConfirm = undefined;
     }
 
     get sizeClass() {
@@ -217,6 +219,174 @@
     }
   }
 
-  registerComponent('app-alert', AlertComponent);
+  registerComponent('alert-component', AlertComponent);
+
+  // ===========================================================================
+  // DialogService – servicio para abrir diálogos modales programáticamente.
+  // ===========================================================================
+
+  const BASE_Z_INDEX = 6000;
+
+  class DialogService {
+
+    constructor() {
+      this.dialogStack = 0;
+      this.backdropElement = null;
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') this._closeLastByEscape();
+      });
+
+      pubSub.subscribe('app-dialog-closed', () => this._removeDialog());
+    }
+
+    showProgressBar(duration) {
+      pubSub.publish('http-client:loading');
+      if (duration && duration > 0) {
+        setTimeout(() => this.hideProgressBar(), duration);
+      }
+    }
+
+    hideProgressBar() {
+      pubSub.publish('http-client:loaded');
+    }
+
+    showDialog(options) {
+      return this._createRef({ icon: undefined, showFooter: true, ...options });
+    }
+
+    showInfo(message, options) {
+      return this._createRef({ ...options, message, icon: 'info', showFooter: false || options?.showFooter || false });
+    }
+
+    showSuccess(message, options) {
+      return this._createRef({ ...options, message, icon: 'check', showFooter: options?.showFooter || false });
+    }
+
+    showWarning(message, options) {
+      return this._createRef({ ...options, message, icon: 'warning', showFooter: true });
+    }
+
+    showError(message, options) {
+      return this._createRef({ ...options, message, icon: 'circle-x', showFooter: true });
+    }
+
+    showLoading(message, options) {
+      const html = `
+        <div class="flex flex-col items-center gap-2 justify-center">
+          ${message}
+          <div class="h-1 w-40 overflow-hidden rounded-full bg-red-700">
+            <div class="h-full w-full origin-left animate-[progress_2.5s_infinite_linear] bg-primary"></div>
+          </div>
+          <div class="h-px"></div>
+        </div>
+      `;
+      return this._createRef({
+        ...options, message: html, asHtml: true, disableClose: true, size: 'none'
+      });
+    }
+
+    showQuestion(message, options) {
+      return this._createRef({
+        ...options,
+        message,
+        icon: 'question',
+        showFooter: true,
+        showConfirmButton: true,
+      });
+    }
+
+    confirm(message, options) {
+      return new Promise(resolve => {
+        this._show({
+          ...options,
+          message,
+          showFooter: true,
+          icon: 'question',
+          onConfirm: () => resolve(true),
+          onCancel: () => resolve(false),
+          showConfirmButton: true,
+        });
+      });
+    }
+
+    close() {
+      const last = this._getLast();
+      if (last) last.close();
+      return last;
+    }
+
+    forceClose() {
+      while (this.close()) { /* empty */ }
+    }
+
+    // =========================================================================
+    // Métodos privados
+    // =========================================================================
+
+    _createRef(options) {
+      let callback = null;
+      const instance = this._show({
+        ...options,
+        onAfterOpen: (data) => callback?.(data),
+      });
+      return {
+        afterOpen: (cb) => { callback = cb; },
+        instance,
+      };
+    }
+
+    _show(options) {
+      this._ensureBackdrop();
+      const currentZIndex = BASE_Z_INDEX + (this.dialogStack * 2);
+      this.backdropElement.style.zIndex = currentZIndex.toString();
+
+      const instance = new AlertComponent();
+      instance.init({ data: options });
+      const element = instance.render();
+      element.style.zIndex = (currentZIndex + 1).toString();
+      document.body.appendChild(element);
+      this.dialogStack++;
+      queueMicrotask(() => options.onAfterOpen?.(instance));
+      return instance;
+    }
+
+    _ensureBackdrop() {
+      if (!this.backdropElement) {
+        this.backdropElement = document.createElement('div');
+        this.backdropElement.className = 'fixed inset-0 bg-black/60 transition-opacity duration-300';
+        this.backdropElement.style.pointerEvents = 'auto';
+        document.body.appendChild(this.backdropElement);
+      }
+      this.backdropElement.style.display = 'block';
+    }
+
+    _removeDialog() {
+      this.dialogStack--;
+      if (this.dialogStack > 0) {
+        const prevZIndex = BASE_Z_INDEX + ((this.dialogStack - 1) * 2);
+        this.backdropElement.style.zIndex = prevZIndex.toString();
+      } else {
+        this.backdropElement?.remove();
+        this.backdropElement = null;
+      }
+    }
+
+    _getLast() {
+      if (this.dialogStack === 0) return null;
+      const elements = document.querySelectorAll('.app-alert-wrapper');
+      if (elements.length === 0) return null;
+      const lastElement = elements[elements.length - 1];
+      // @ts-ignore
+      return lastElement.__componentInstance ?? null;
+    }
+
+    _closeLastByEscape() {
+      const last = this._getLast();
+      if (last && last.canClose()) last.close();
+    }
+  }
+
+  VanillaReactive.services.dialogService = new DialogService();
 
 }());

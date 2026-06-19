@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playground - Dialog Service Reference</title>
+  <script src="https://cdn.tailwindcss.com/3.4.15"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
+  <script src="js/icons.js"></script>
+  <script src="js/vanilla-reactive.iife.js"></script>
+  <script src="js/app-components-bundle.js"></script>
+  <script src="js/app-components/samples/notification-panel.component.js"></script>
+  <script src="js/app-components/samples/alert-component.js"></script>
+
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    body { visibility: hidden; }
+  </style>
+
+  <script>
+
+    const { services } = VanillaReactive;
+
+    function initAll() {
+
+      const ds = services.dialogService;
+
+      // =========================================================================
+      // AlertOptions – referencia completa de propiedades
+      // =========================================================================
+      // {
+      //   message:           string    — Contenido del diálogo (texto o HTML)
+      //   title:             string    — Título en la cabecera (si vacío no se muestra header)
+      //   subTitle:          string    — Subtítulo bajo el título
+      //   icon:              string    — Nombre del icono lucide: 'info','check','warning','circle-x','question', etc.
+      //   size:              string    — 'sm' | 'md' | 'lg' | 'xl' | 'fullscreen' | 'none' | 'image'
+      //   showFooter:        boolean   — Muestra la barra de botones inferior
+      //   showConfirmButton: boolean   — Muestra el botón de confirmar (además del de cerrar)
+      //   disableClose:      boolean   — Impide cerrar el diálogo (Escape, backdrop, botón X)
+      //   asHtml:            boolean   — Interpreta message como HTML en vez de texto
+      //   autoCloseMs:       number    — Cierra automáticamente tras N milisegundos (0 = no auto-cierre)
+      //   literals:          string[]  — Textos de los botones: [cancelar, confirmar]. Default: ['Cerrar','Aceptar']
+      //   onClose:           ()=>void  — Callback al cerrarse (por cualquier vía)
+      //   onCancel:          ()=>void  — Callback al pulsar Cancelar/Cerrar
+      //   onConfirm:     (instance)=>boolean|void — Callback al pulsar Confirmar. Return false para impedir cierre.
+      //   onAfterOpen:   (instance)=>void         — Callback tras montar el diálogo en el DOM
+      // }
+
+      const ctx = {
+
+        // =======================================================================
+        // 1. showInfo(message, options?) → AlertRef
+        //    Muestra un diálogo informativo SIN footer por defecto.
+        // =======================================================================
+        demo_showInfo_basic() {
+          ds.showInfo('Operación completada con éxito.');
+        },
+
+        demo_showInfo_with_title() {
+          ds.showInfo('Los datos se han guardado correctamente en la base de datos.', {
+            title: 'Información',
+          });
+        },
+
+        demo_showInfo_autoclose() {
+          ds.showInfo('Este mensaje se cerrará solo en 2 segundos.', {
+            title: 'Auto-cierre',
+            autoCloseMs: 2000,
+          });
+        },
+
+        demo_showInfo_with_footer() {
+          ds.showInfo('¿Deseas continuar viendo esta información?', {
+            title: 'Info con footer',
+            showFooter: true,
+            onClose: () => console.log('showInfo: onClose fired'),
+          });
+        },
+
+        demo_showInfo_all_options() {
+          ds.showInfo('Mensaje informativo con TODAS las opciones posibles.', {
+            title: 'Título completo',
+            subTitle: 'Subtítulo descriptivo',
+            size: 'md',
+            showFooter: true,
+            showConfirmButton: true,
+            disableClose: false,
+            autoCloseMs: 0,
+            literals: ['Descartar', 'Entendido'],
+            onClose:   () => console.log('showInfo full: onClose'),
+            onCancel:  () => console.log('showInfo full: onCancel'),
+            onConfirm: (instance) => { console.log('showInfo full: onConfirm', instance); },
+          });
+        },
+
+        // =======================================================================
+        // 2. showSuccess(message, options?) → AlertRef
+        //    Icono 'check'. Sin footer por defecto.
+        // =======================================================================
+        demo_showSuccess_basic() {
+          ds.showSuccess('Usuario creado correctamente.');
+        },
+
+        demo_showSuccess_with_title() {
+          ds.showSuccess('El registro ha sido actualizado.', {
+            title: 'Éxito',
+            subTitle: 'Todos los campos se guardaron',
+            autoCloseMs: 3000,
+          });
+        },
+
+        demo_showSuccess_with_footer() {
+          ds.showSuccess('Proceso finalizado. ¿Desea ver el informe?', {
+            title: 'Completado',
+            showFooter: true,
+            showConfirmButton: true,
+            literals: ['No', 'Ver informe'],
+            onConfirm: () => console.log('Navegar al informe...'),
+          });
+        },
+
+        // =======================================================================
+        // 3. showWarning(message, options?) → AlertRef
+        //    Icono 'warning'. Con footer por defecto.
+        // =======================================================================
+        demo_showWarning_basic() {
+          ds.showWarning('Algunos campos no se han rellenado.');
+        },
+
+        demo_showWarning_with_title() {
+          ds.showWarning('Esta acción podría tardar varios minutos.', {
+            title: 'Advertencia',
+            subTitle: 'Proceso pesado en curso',
+          });
+        },
+
+        demo_showWarning_no_close() {
+          const ref = ds.showWarning('No puedes cerrar este diálogo con Escape ni con el backdrop. Pulsa el botón.', {
+            title: 'Bloqueo de cierre',
+            disableClose: true,
+          });
+          // Pero sí se puede cerrar desde el botón "Cerrar" del footer
+        },
+
+        // =======================================================================
+        // 4. showError(message, options?) → AlertRef
+        //    Icono 'circle-x'. Con footer por defecto.
+        // =======================================================================
+        demo_showError_basic() {
+          ds.showError('No se pudo conectar con el servidor.');
+        },
+
+        demo_showError_with_title() {
+          ds.showError('Error 500: Internal Server Error. Contacte al administrador.', {
+            title: 'Error del servidor',
+            size: 'sm',
+          });
+        },
+
+        demo_showError_large() {
+          const trace = 'Error: ECONNREFUSED\n    at TCPConnectWrap.afterConnect\n    at TCPConnectWrap.callbackTrampoline\n    at Module._compile (node:internal/modules/cjs/loader:1234:14)\n    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1289:10)';
+          ds.showError(`<pre class="text-xs whitespace-pre-wrap text-left">${trace}</pre>`, {
+            title: 'Stack trace',
+            asHtml: true,
+            size: 'lg',
+          });
+        },
+
+        // =======================================================================
+        // 5. showQuestion(message, options?) → AlertRef
+        //    Icono 'question'. Footer + botón confirmar por defecto.
+        // =======================================================================
+        demo_showQuestion_basic() {
+          ds.showQuestion('¿Está seguro de que desea continuar?');
+        },
+
+        demo_showQuestion_with_callbacks() {
+          ds.showQuestion('¿Desea eliminar este registro permanentemente?', {
+            title: 'Confirmar eliminación',
+            literals: ['Cancelar', 'Eliminar'],
+            onConfirm: () => console.log('Registro eliminado'),
+            onCancel:  () => console.log('Eliminación cancelada'),
+          });
+        },
+
+        demo_showQuestion_prevent_close() {
+          ds.showQuestion('Escribe "BORRAR" en la consola para confirmar. onConfirm retorna false para impedir el cierre.', {
+            title: 'Confirmación condicionada',
+            literals: ['Cancelar', 'Confirmar'],
+            onConfirm: (instance) => {
+              console.log('onConfirm: retornando false, el diálogo NO se cierra');
+              instance.setFeedback('No se puede confirmar (demo: onConfirm retorna false)');
+              return false;
+            },
+          });
+        },
+
+        // =======================================================================
+        // 6. confirm(message, options?) → Promise<boolean>
+        //    Versión async/await. Resuelve true (confirmar) o false (cancelar).
+        // =======================================================================
+        async demo_confirm_basic() {
+          const result = await ds.confirm('¿Guardar los cambios antes de salir?');
+          console.log('confirm result:', result);
+          ds.showInfo(`Has pulsado: ${result ? 'Confirmar' : 'Cancelar'}`);
+        },
+
+        async demo_confirm_with_options() {
+          const result = await ds.confirm('¿Desea exportar los datos a CSV?', {
+            title: 'Exportar datos',
+            subTitle: 'Se generará un archivo con todos los registros',
+            literals: ['No exportar', 'Exportar'],
+            size: 'sm',
+          });
+          console.log('confirm export result:', result);
+          if (result) {
+            ds.showSuccess('Exportación iniciada.', { autoCloseMs: 1500 });
+          }
+        },
+
+        // =======================================================================
+        // 7. showDialog(options?) → AlertRef
+        //    Genérico: sin icono, con footer. Máxima personalización.
+        // =======================================================================
+        demo_showDialog_basic() {
+          ds.showDialog({
+            message: 'Diálogo genérico sin icono.',
+            title: 'Diálogo base',
+          });
+        },
+
+        demo_showDialog_html_content() {
+          ds.showDialog({
+            title: 'Contenido HTML',
+            asHtml: true,
+            message: `
+              <div class="space-y-3 text-left p-2">
+                <p class="font-semibold">Formulario de ejemplo:</p>
+                <input type="text" placeholder="Nombre" 
+                  class="w-full p-2 border rounded dark:bg-slate-800 dark:border-slate-600 dark:text-white" />
+                <input type="email" placeholder="Email" 
+                  class="w-full p-2 border rounded dark:bg-slate-800 dark:border-slate-600 dark:text-white" />
+                <textarea placeholder="Comentarios" rows="3" 
+                  class="w-full p-2 border rounded dark:bg-slate-800 dark:border-slate-600 dark:text-white"></textarea>
+              </div>
+            `,
+            size: 'md',
+            showConfirmButton: true,
+            literals: ['Cancelar', 'Enviar'],
+            onConfirm: () => console.log('Formulario enviado'),
+          });
+        },
+
+        demo_showDialog_fullscreen() {
+          ds.showDialog({
+            title: 'Diálogo fullscreen',
+            subTitle: 'Ocupa toda la pantalla',
+            message: '<div class="flex items-center justify-center h-full text-2xl text-slate-400">Contenido a pantalla completa</div>',
+            asHtml: true,
+            size: 'fullscreen',
+            showConfirmButton: false,
+          });
+        },
+
+        demo_showDialog_sizes() {
+          const sizes = ['sm', 'md', 'lg', 'xl'];
+          let i = 0;
+          function showNext() {
+            if (i >= sizes.length) return;
+            const size = sizes[i++];
+            ds.showDialog({
+              title: `Tamaño: ${size}`,
+              message: `Este diálogo usa size: '${size}'`,
+              size,
+              literals: [i < sizes.length ? 'Siguiente' : 'Fin'],
+              onCancel: showNext,
+            });
+          }
+          showNext();
+        },
+
+        demo_showDialog_afterOpen() {
+          const ref = ds.showDialog({
+            title: 'afterOpen callback',
+            message: '<div id="dynamic-content">Cargando...</div>',
+            asHtml: true,
+            showConfirmButton: false,
+          });
+          ref.afterOpen((instance) => {
+            console.log('afterOpen: instancia recibida', instance);
+            const el = instance.getContainer()?.querySelector('#dynamic-content');
+            if (el) el.textContent = '¡Contenido inyectado desde afterOpen!';
+          });
+        },
+
+        demo_showDialog_setFeedback() {
+          ds.showDialog({
+            title: 'setFeedback demo',
+            message: 'Pulsa Confirmar para ver el feedback en el footer.',
+            showConfirmButton: true,
+            literals: ['Cerrar', 'Validar'],
+            onConfirm: (instance) => {
+              instance.setFeedback('⚠️ Hay errores de validación en el formulario.');
+              return false; // impedir cierre
+            },
+          });
+        },
+
+        // =======================================================================
+        // 8. showLoading(message, options?) → AlertRef
+        //    Diálogo con barra de progreso. disableClose por defecto.
+        // =======================================================================
+        demo_showLoading_basic() {
+          const ref = ds.showLoading('Procesando datos, por favor espere...');
+          // Simular fin de carga
+          setTimeout(() => ref.instance.close(), 3000);
+        },
+
+        demo_showLoading_with_options() {
+          const ref = ds.showLoading('Subiendo archivo al servidor...', {
+            title: 'Subida en curso',
+          });
+          setTimeout(() => {
+            ref.instance.close();
+            ds.showSuccess('Archivo subido correctamente.', { autoCloseMs: 2000 });
+          }, 3000);
+        },
+
+        // =======================================================================
+        // 9. showProgressBar / hideProgressBar
+        //    Controla la barra de progreso global (via pubsub).
+        // =======================================================================
+        demo_progressBar() {
+          ds.showProgressBar(3000); // se oculta sola tras 3 segundos
+        },
+
+        // =======================================================================
+        // 10. close() / forceClose()
+        //     Cierra el último diálogo / todos los diálogos abiertos.
+        // =======================================================================
+        demo_stacked_dialogs() {
+          ds.showInfo('Diálogo 1 (fondo)', { title: 'Capa 1' });
+          setTimeout(() => {
+            ds.showWarning('Diálogo 2 (encima)', { title: 'Capa 2' });
+          }, 500);
+          setTimeout(() => {
+            ds.showError('Diálogo 3 (tope)', {
+              title: 'Capa 3',
+              showConfirmButton: true,
+              literals: ['Cerrar este', 'Cerrar TODOS'],
+              onConfirm: () => ds.forceClose(),
+            });
+          }, 1000);
+        },
+
+        updateBindings() {
+          this.bindings?.forEach(binding => {
+            VanillaReactive.resolveBindingValue(binding, this);
+          });
+        },
+      };
+
+      VanillaReactive.hydrateElement(document.body, ctx);
+    }
+
+    VanillaReactive.initApp([initAll]);
+
+  </script>
+
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors">
+  <div class="max-w-5xl mx-auto space-y-8 px-4 pb-12">
+
+    <header>
+      <div data-component="header-component"></div>
+      <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">
+        <i data-icon="message-square" class="size-10 inline-flex"></i>
+        DialogService – Referencia completa
+      </h1>
+      <p class="text-gray-500 dark:text-gray-400 mt-2 border border-gray-200 dark:border-gray-700 rounded p-4">
+        Página de referencia con TODOS los métodos y opciones de
+        <code class="font-mono text-sm bg-gray-200 dark:bg-gray-700 px-1 rounded">VanillaReactive.services.dialogService</code>.
+        Cada botón ejecuta un ejemplo funcional. Revisa la consola para ver los callbacks.
+      </p>
+      <p class="text-gray-500 dark:text-gray-400 mt-2 border border-gray-200 dark:border-gray-700 rounded p-4">
+        <b>El prompt</b><br />
+        Eres un avispado javascript developer y tester y tienes que hacer un exahaustivo estudio de las formas de llamar a los métodos de VanillaReactive.services.dialogService.
+        <br/>
+        Haz una pagina html nueva en playground en la que dentro de un tag 
+        <code class="font-mono text-sm bg-gray-200 dark:bg-gray-700 px-1 rounded">pre</code> o <code class="font-mono text-sm bg-gray-200 dark:bg-gray-700 px-1 rounded">code</code>
+        o como lo veas más apropiado generes TODAS la formas de mostrar mensajes. 
+        Estoy interesado en que utilices el objeto options con TODAS sus propiedades para que me sirva de referencia futura desde js donde no tendré intelisense
+      </p>
+    </header>
+
+    <nav class="my-2 flex gap-2">
+      <a href="index.html" class="app-button text-center text-blue-600 dark:text-blue-400 hover:underline">Home</a>
+      <a href="icons.html" class="app-button text-center text-blue-600 dark:text-blue-400 hover:underline">Icons</a>
+      <a href="reports.html" class="app-button text-center text-blue-600 dark:text-blue-400 hover:underline">Reports</a>
+      <a href="todo.html" class="app-button text-center text-blue-600 dark:text-blue-400 hover:underline">Todo List</a>
+      <a href="counter.html" class="app-button text-center text-blue-600 dark:text-blue-400 hover:underline">Counter</a>
+      <a href="table.html" class="app-button text-center text-blue-600 dark:text-blue-400 hover:underline">Table</a>
+      <a href="icons.html" class="app-button text-center text-blue-600 dark:text-blue-400 hover:underline">Icons</a>
+    </nav>
+
+    <!-- ================================================================= -->
+    <!-- AlertOptions reference                                            -->
+    <!-- ================================================================= -->
+    <section>
+      <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3 border-b pb-2">
+        <i data-icon="book-open" class="size-9 align-text-bottom  inline-flex"></i>
+        AlertOptions (todas las propiedades)
+      </h2>
+      <pre class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 text-xs leading-relaxed overflow-x-auto text-gray-800 dark:text-gray-200">
+<span class="text-blue-600 dark:text-blue-400">const</span> options = {
+  message:           <span class="text-green-600 dark:text-green-400">'string'</span>,           <span class="text-gray-400">// Contenido del diálogo (texto o HTML si asHtml=true)</span>
+  title:             <span class="text-green-600 dark:text-green-400">'string'</span>,           <span class="text-gray-400">// Título en la cabecera (vacío = sin header)</span>
+  subTitle:          <span class="text-green-600 dark:text-green-400">'string'</span>,           <span class="text-gray-400">// Subtítulo bajo el título</span>
+  icon:              <span class="text-green-600 dark:text-green-400">'string'</span>,           <span class="text-gray-400">// Nombre icono lucide: 'info','check','warning','circle-x','question'...</span>
+  size:              <span class="text-green-600 dark:text-green-400">'sm'|'md'|'lg'|'xl'|'fullscreen'|'none'|'image'</span>,
+  showFooter:        <span class="text-amber-600 dark:text-amber-400">false</span>,              <span class="text-gray-400">// Muestra barra de botones inferior</span>
+  showConfirmButton: <span class="text-amber-600 dark:text-amber-400">false</span>,              <span class="text-gray-400">// Muestra botón Confirmar (además de Cerrar)</span>
+  disableClose:      <span class="text-amber-600 dark:text-amber-400">false</span>,              <span class="text-gray-400">// Impide cerrar con Escape, backdrop o botón X</span>
+  asHtml:            <span class="text-amber-600 dark:text-amber-400">false</span>,              <span class="text-gray-400">// Interpreta message como HTML</span>
+  autoCloseMs:       <span class="text-purple-600 dark:text-purple-400">0</span>,                 <span class="text-gray-400">// Auto-cierre tras N ms (0 = desactivado)</span>
+  literals:          <span class="text-green-600 dark:text-green-400">['Cerrar', 'Aceptar']</span>, <span class="text-gray-400">// Textos de [cancelar, confirmar]</span>
+  onClose:           <span class="text-blue-600 dark:text-blue-400">() => void</span>,          <span class="text-gray-400">// Callback al cerrarse (por cualquier vía)</span>
+  onCancel:          <span class="text-blue-600 dark:text-blue-400">() => void</span>,          <span class="text-gray-400">// Callback al pulsar Cancelar / botón Cerrar</span>
+  onConfirm:         <span class="text-blue-600 dark:text-blue-400">(instance) => bool|void</span>, <span class="text-gray-400">// Callback Confirmar. Return false impide cierre</span>
+  onAfterOpen:       <span class="text-blue-600 dark:text-blue-400">(instance) => void</span>,  <span class="text-gray-400">// Callback tras montar en el DOM (via _show interno)</span>
+};
+
+<span class="text-gray-400">// AlertRef (retornado por showInfo, showSuccess, showDialog, etc.)</span>
+<span class="text-blue-600 dark:text-blue-400">const</span> ref = {
+  instance,                    <span class="text-gray-400">// La instancia de AlertComponent</span>
+  afterOpen: <span class="text-blue-600 dark:text-blue-400">(cb) => void</span>,   <span class="text-gray-400">// Registra callback post-apertura</span>
+};
+
+<span class="text-gray-400">// Métodos de la instancia (AlertComponent):</span>
+ref.instance.close();          <span class="text-gray-400">// Cierra el diálogo</span>
+ref.instance.canClose();       <span class="text-gray-400">// Devuelve true si no está bloqueado</span>
+ref.instance.getContainer();   <span class="text-gray-400">// Devuelve el HTMLElement del diálogo</span>
+ref.instance.setFeedback(txt); <span class="text-gray-400">// Muestra texto de feedback en el footer</span>
+      </pre>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- showInfo                                                          -->
+    <!-- ================================================================= -->
+    <section>
+      <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3 border-b pb-2">
+        <i data-icon="info" class="size-9 align-text-bottom  inline-flex vertic"></i>
+        showInfo(message, options?)
+      </h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Icono <code>info</code>. Sin footer por defecto.</p>
+      <div class="flex flex-wrap gap-2">
+        <button on-click="demo_showInfo_basic" class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">Básico</button>
+        <button on-click="demo_showInfo_with_title" class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">Con título</button>
+        <button on-click="demo_showInfo_autoclose" class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">Auto-cierre (2s)</button>
+        <button on-click="demo_showInfo_with_footer" class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">Con footer + onClose</button>
+        <button on-click="demo_showInfo_all_options" class="px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors">TODAS las opciones</button>
+      </div>
+      <details class="mt-2">
+        <summary class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300">Ver código</summary>
+        <pre class="mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-xs overflow-x-auto text-gray-800 dark:text-gray-200">
+// Básico
+ds.showInfo('Operación completada con éxito.');
+
+// Con título
+ds.showInfo('Los datos se han guardado correctamente.', {
+  title: 'Información',
+});
+
+// Auto-cierre
+ds.showInfo('Se cerrará solo en 2 segundos.', {
+  title: 'Auto-cierre',
+  autoCloseMs: 2000,
+});
+
+// TODAS las opciones
+ds.showInfo('Mensaje con todas las opciones posibles.', {
+  title: 'Título completo',
+  subTitle: 'Subtítulo descriptivo',
+  size: 'md',
+  showFooter: true,
+  showConfirmButton: true,
+  disableClose: false,
+  autoCloseMs: 0,
+  literals: ['Descartar', 'Entendido'],
+  onClose:   () => console.log('onClose'),
+  onCancel:  () => console.log('onCancel'),
+  onConfirm: (instance) => console.log('onConfirm', instance),
+});</pre>
+      </details>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- showSuccess                                                       -->
+    <!-- ================================================================= -->
+    <section>
+      <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3 border-b pb-2">
+        <i data-icon="check" class="size-9 align-text-bottom  inline-flex"></i>
+        showSuccess(message, options?)
+      </h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Icono <code>check</code>. Sin footer por defecto.</p>
+      <div class="flex flex-wrap gap-2">
+        <button on-click="demo_showSuccess_basic" class="px-4 py-2 text-sm rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors">Básico</button>
+        <button on-click="demo_showSuccess_with_title" class="px-4 py-2 text-sm rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors">Con título + auto-cierre</button>
+        <button on-click="demo_showSuccess_with_footer" class="px-4 py-2 text-sm rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors">Con confirmar</button>
+      </div>
+      <details class="mt-2">
+        <summary class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300">Ver código</summary>
+        <pre class="mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-xs overflow-x-auto text-gray-800 dark:text-gray-200">
+ds.showSuccess('Usuario creado correctamente.');
+
+ds.showSuccess('Registro actualizado.', {
+  title: 'Éxito',
+  subTitle: 'Todos los campos se guardaron',
+  autoCloseMs: 3000,
+});
+
+ds.showSuccess('Proceso finalizado. ¿Desea ver el informe?', {
+  title: 'Completado',
+  showFooter: true,
+  showConfirmButton: true,
+  literals: ['No', 'Ver informe'],
+  onConfirm: () => console.log('Navegar al informe...'),
+});</pre>
+      </details>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- showWarning                                                       -->
+    <!-- ================================================================= -->
+    <section>
+      <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3 border-b pb-2">
+        <i data-icon="triangle-alert" class="size-9 align-text-bottom  inline-flex"></i>
+        showWarning(message, options?)
+      </h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Icono <code>warning</code>. Con footer por defecto.</p>
+      <div class="flex flex-wrap gap-2">
+        <button on-click="demo_showWarning_basic" class="px-4 py-2 text-sm rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition-colors">Básico</button>
+        <button on-click="demo_showWarning_with_title" class="px-4 py-2 text-sm rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition-colors">Con título + subtítulo</button>
+        <button on-click="demo_showWarning_no_close" class="px-4 py-2 text-sm rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition-colors">disableClose</button>
+      </div>
+      <details class="mt-2">
+        <summary class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300">Ver código</summary>
+        <pre class="mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-xs overflow-x-auto text-gray-800 dark:text-gray-200">
+ds.showWarning('Algunos campos no se han rellenado.');
+
+ds.showWarning('Esta acción podría tardar varios minutos.', {
+  title: 'Advertencia',
+  subTitle: 'Proceso pesado en curso',
+});
+
+ds.showWarning('No puedes cerrar este diálogo con Escape ni backdrop.', {
+  title: 'Bloqueo de cierre',
+  disableClose: true,
+});</pre>
+      </details>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- showError                                                         -->
+    <!-- ================================================================= -->
+    <section>
+      <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3 border-b pb-2">
+        <i data-icon="circle-x" class="size-9 align-text-bottom  inline-flex"></i>
+        showError(message, options?)
+      </h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Icono <code>circle-x</code>. Con footer por defecto.</p>
+      <div class="flex flex-wrap gap-2">
+        <button on-click="demo_showError_basic" class="px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors">Básico</button>
+        <button on-click="demo_showError_with_title" class="px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors">Con título (size sm)</button>
+        <button on-click="demo_showError_large" class="px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors">Stack trace (HTML + size lg)</button>
+      </div>
+      <details class="mt-2">
+        <summary class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300">Ver código</summary>
+        <pre class="mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-xs overflow-x-auto text-gray-800 dark:text-gray-200">
+ds.showError('No se pudo conectar con el servidor.');
+
+ds.showError('Error 500: Internal Server Error.', {
+  title: 'Error del servidor',
+  size: 'sm',
+});
+
+// Con HTML y tamaño grande
+ds.showError('&lt;pre class="text-xs whitespace-pre-wrap"&gt;...stack trace...&lt;/pre&gt;', {
+  title: 'Stack trace',
+  asHtml: true,
+  size: 'lg',
+});</pre>
+      </details>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- showQuestion                                                      -->
+    <!-- ================================================================= -->
+    <section>
+      <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3 border-b pb-2">
+        <i data-icon="circle-help" class="size-9 align-text-bottom  inline-flex"></i>
+        showQuestion(message, options?)
+      </h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Icono <code>question</code>. Footer + botón confirmar por defecto.</p>
+      <div class="flex flex-wrap gap-2">
+        <button on-click="demo_showQuestion_basic" class="px-4 py-2 text-sm rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors">Básico</button>
+        <button on-click="demo_showQuestion_with_callbacks" class="px-4 py-2 text-sm rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors">Con callbacks</button>
+        <button on-click="demo_showQuestion_prevent_close" class="px-4 py-2 text-sm rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors">onConfirm → false (impide cierre)</button>
+      </div>
+      <details class="mt-2">
+        <summary class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300">Ver código</summary>
+        <pre class="mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-xs overflow-x-auto text-gray-800 dark:text-gray-200">
+ds.showQuestion('¿Está seguro de que desea continuar?');
+
+ds.showQuestion('¿Desea eliminar este registro?', {
+  title: 'Confirmar eliminación',
+  literals: ['Cancelar', 'Eliminar'],
+  onConfirm: () => console.log('Eliminado'),
+  onCancel:  () => console.log('Cancelado'),
+});
+
+// onConfirm retorna false → el diálogo NO se cierra
+ds.showQuestion('Imposible confirmar esta demo.', {
+  title: 'Confirmación condicionada',
+  literals: ['Cancelar', 'Confirmar'],
+  onConfirm: (instance) => {
+    instance.setFeedback('Error de validación');
+    return false;
+  },
+});</pre>
+      </details>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- confirm (Promise)                                                 -->
+    <!-- ================================================================= -->
+    <section>
+      <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3 border-b pb-2">
+        <i data-icon="shield-question-mark" class="size-9 align-text-bottom  inline-flex"></i>
+        confirm(message, options?) → Promise&lt;boolean&gt;
+      </h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Versión async/await. Resuelve <code>true</code> o <code>false</code>.</p>
+      <div class="flex flex-wrap gap-2">
+        <button on-click="demo_confirm_basic" class="px-4 py-2 text-sm rounded-lg bg-cyan-600 text-white hover:bg-cyan-700 transition-colors">Básico (await)</button>
+        <button on-click="demo_confirm_with_options" class="px-4 py-2 text-sm rounded-lg bg-cyan-600 text-white hover:bg-cyan-700 transition-colors">Con opciones</button>
+      </div>
+      <details class="mt-2">
+        <summary class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300">Ver código</summary>
+        <pre class="mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-xs overflow-x-auto text-gray-800 dark:text-gray-200">
+// Básico
+const result = await ds.confirm('¿Guardar cambios?');
+console.log(result); // true o false
+
+// Con opciones
+const ok = await ds.confirm('¿Exportar datos a CSV?', {
+  title: 'Exportar datos',
+  subTitle: 'Se generará un archivo con todos los registros',
+  literals: ['No exportar', 'Exportar'],
+  size: 'sm',
+});
+if (ok) ds.showSuccess('Exportación iniciada.', { autoCloseMs: 1500 });</pre>
+      </details>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- showDialog (genérico)                                             -->
+    <!-- ================================================================= -->
+    <section>
+      <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3 border-b pb-2">
+        <i data-icon="layout-panel-top" class="size-9 align-text-bottom  inline-flex"></i>
+        showDialog(options?) – Genérico
+      </h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Sin icono, con footer. Máxima personalización.</p>
+      <div class="flex flex-wrap gap-2">
+        <button on-click="demo_showDialog_basic" class="px-4 py-2 text-sm rounded-lg bg-slate-600 text-white hover:bg-slate-700 transition-colors">Básico</button>
+        <button on-click="demo_showDialog_html_content" class="px-4 py-2 text-sm rounded-lg bg-slate-600 text-white hover:bg-slate-700 transition-colors">HTML (formulario)</button>
+        <button on-click="demo_showDialog_fullscreen" class="px-4 py-2 text-sm rounded-lg bg-slate-600 text-white hover:bg-slate-700 transition-colors">Fullscreen</button>
+        <button on-click="demo_showDialog_sizes" class="px-4 py-2 text-sm rounded-lg bg-slate-600 text-white hover:bg-slate-700 transition-colors">Cascada de tamaños</button>
+        <button on-click="demo_showDialog_afterOpen" class="px-4 py-2 text-sm rounded-lg bg-slate-600 text-white hover:bg-slate-700 transition-colors">afterOpen callback</button>
+        <button on-click="demo_showDialog_setFeedback" class="px-4 py-2 text-sm rounded-lg bg-slate-600 text-white hover:bg-slate-700 transition-colors">setFeedback</button>
+      </div>
+      <details class="mt-2">
+        <summary class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300">Ver código</summary>
+        <pre class="mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-xs overflow-x-auto text-gray-800 dark:text-gray-200">
+// Genérico básico
+ds.showDialog({
+  message: 'Diálogo genérico sin icono.',
+  title: 'Diálogo base',
+});
+
+// HTML con formulario
+ds.showDialog({
+  title: 'Contenido HTML',
+  asHtml: true,
+  message: '&lt;div&gt;...inputs...&lt;/div&gt;',
+  size: 'md',
+  showConfirmButton: true,
+  literals: ['Cancelar', 'Enviar'],
+  onConfirm: () => console.log('Enviado'),
+});
+
+// Fullscreen
+ds.showDialog({
+  title: 'Diálogo fullscreen',
+  size: 'fullscreen',
+  asHtml: true,
+  message: '&lt;div class="flex items-center justify-center h-full"&gt;...&lt;/div&gt;',
+});
+
+// afterOpen — inyectar contenido dinámico
+const ref = ds.showDialog({
+  title: 'afterOpen callback',
+  message: '&lt;div id="dynamic"&gt;Cargando...&lt;/div&gt;',
+  asHtml: true,
+});
+ref.afterOpen((instance) => {
+  const el = instance.getContainer()?.querySelector('#dynamic');
+  if (el) el.textContent = '¡Inyectado desde afterOpen!';
+});
+
+// setFeedback — mostrar errores en el footer
+ds.showDialog({
+  title: 'setFeedback',
+  message: 'Pulsa Confirmar para ver feedback.',
+  showConfirmButton: true,
+  onConfirm: (instance) => {
+    instance.setFeedback('Error de validación');
+    return false; // no cerrar
+  },
+});</pre>
+      </details>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- showLoading                                                       -->
+    <!-- ================================================================= -->
+    <section>
+      <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3 border-b pb-2">
+        <i data-icon="loader" class="size-9 align-text-bottom  inline-flex"></i>
+        showLoading(message, options?)
+      </h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Barra de progreso animada. <code>disableClose: true</code> por defecto.</p>
+      <div class="flex flex-wrap gap-2">
+        <button on-click="demo_showLoading_basic" class="px-4 py-2 text-sm rounded-lg bg-orange-600 text-white hover:bg-orange-700 transition-colors">Básico (3s)</button>
+        <button on-click="demo_showLoading_with_options" class="px-4 py-2 text-sm rounded-lg bg-orange-600 text-white hover:bg-orange-700 transition-colors">Con título (3s → success)</button>
+      </div>
+      <details class="mt-2">
+        <summary class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300">Ver código</summary>
+        <pre class="mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-xs overflow-x-auto text-gray-800 dark:text-gray-200">
+const ref = ds.showLoading('Procesando datos...');
+setTimeout(() => ref.instance.close(), 3000);
+
+const ref2 = ds.showLoading('Subiendo archivo...', { title: 'Subida' });
+setTimeout(() => {
+  ref2.instance.close();
+  ds.showSuccess('Subido correctamente.', { autoCloseMs: 2000 });
+}, 3000);</pre>
+      </details>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- ProgressBar / Stacked / close / forceClose                        -->
+    <!-- ================================================================= -->
+    <section>
+      <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3 border-b pb-2">
+        <i data-icon="layers" class="size-9 align-text-bottom  inline-flex"></i>
+        Otros: progressBar, close(), forceClose(), diálogos apilados
+      </h2>
+      <div class="flex flex-wrap gap-2">
+        <button on-click="demo_progressBar" class="px-4 py-2 text-sm rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors">showProgressBar (3s)</button>
+        <button on-click="demo_stacked_dialogs" class="px-4 py-2 text-sm rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors">3 diálogos apilados + forceClose</button>
+      </div>
+      <details class="mt-2">
+        <summary class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300">Ver código</summary>
+        <pre class="mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-xs overflow-x-auto text-gray-800 dark:text-gray-200">
+// Barra de progreso global (vía pubsub)
+ds.showProgressBar(3000);
+
+// Diálogos apilados con z-index incremental
+ds.showInfo('Diálogo 1', { title: 'Capa 1' });
+setTimeout(() => ds.showWarning('Diálogo 2', { title: 'Capa 2' }), 500);
+setTimeout(() => ds.showError('Diálogo 3', {
+  title: 'Capa 3',
+  showConfirmButton: true,
+  literals: ['Cerrar este', 'Cerrar TODOS'],
+  onConfirm: () => ds.forceClose(),
+}), 1000);
+
+// Cerrar el último
+ds.close();
+
+// Cerrar todos
+ds.forceClose();</pre>
+      </details>
+    </section>
+
+    <div data-component="notification-panel-component" data-position="top-right"></div>
+  </div>
+
+</body>
+
+</html>
