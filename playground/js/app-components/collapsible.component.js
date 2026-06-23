@@ -21,7 +21,8 @@
       super.init(ctx);
       this.setState({
         expanded: this.props.expanded === 'true' || false,
-        title: this.props.title || 'Texto por defecto'
+        title: this.props.title || 'Texto por defecto',
+        padding: this.props.padding || 'p-4'
       });
     }
 
@@ -40,21 +41,21 @@
         <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-300 dark:border-slate-800 dark:bg-slate-900">
           <button 
             on-click="toggle"
-            class="flex w-full items-center justify-between p-4 text-left transition-colors duration-200 hover:bg-slate-50 focus:outline-none dark:hover:bg-slate-800/50"
+            class="flex w-full items-center justify-between p-2 text-left transition-colors duration-200 hover:bg-slate-50 focus:outline-none dark:hover:bg-slate-800/50"
           >
             <div class="flex items-center gap-3">            
-              <span class="font-semibold text-slate-700 dark:text-slate-200">
+              <span class="font-semibold text-slate-700 dark:text-slate-200 ml-2">
                 {state.title}
               </span>
             </div>
-            <span data-bind="show:state.expanded"><i data-icon="chevron-up" class="size-9"></i></span>
-            <span data-bind="hide:state.expanded"><i data-icon="chevron-down" class="size-9"></i></span>
+            <span data-bind="show:state.expanded"><i data-icon="chevron-up" class="size-8"></i></span>
+            <span data-bind="hide:state.expanded"><i data-icon="chevron-down" class="size-8"></i></span>
           </button>
           <div 
             data-each="child in children" 
             data-bind="toggle.hidden:state.expanded | not"
             class="animate-fade-in border-t border-slate-100
-              bg-slate-50/30 p-4 text-slate-600
+              bg-slate-50/30 {state.padding} text-slate-600
               dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-400"
           >
           </div>
