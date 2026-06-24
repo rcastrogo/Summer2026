@@ -30,6 +30,8 @@
     // Custom component to copy text to clipboard
     // ==============================================================================
     class CopyTextComponent extends BaseComponent {
+
+      mode = 'copy';
       
       constructor(ctx) { 
         super(ctx); 
@@ -37,37 +39,54 @@
 
       init(ctx) {
         super.init(ctx);
+        this.mode = this.props.mode === 'download' ? 'download' : 'copy';
       }
 
       animateIcon() {
         const icon = $('svg', this.element).one();
         if (icon) {
           icon.classList.add('animate-spin');
-          setTimeout(() => {
-            icon.classList.remove('animate-spin');
-          }, 500);
+          setTimeout(() => icon.classList.remove('animate-spin'), 500);
         }
       }
 
+      resolveText() {
+        if (this.props.target)
+          return $(this.props.target).one()?.innerText || '';
+        else
+          return this.textProvider ? this.textProvider() : '';
+      }
+
       copy() {
-        const text = navigator.clipboard && this.textProvider ? this.textProvider() : '';
-        if (text) {
+        const text = this.resolveText();
+        if (navigator.clipboard && text) {
           navigator.clipboard.writeText(text).then(() => {
-            console.log('Código copiado al portapapeles');
             this.animateIcon();
           }).catch(err => {
             alert('Error al copiar al portapapeles: ' + err);
           });
-          return;
         }
+      }
+
+      download() {
+        const text = this.resolveText();
+        if (!text) return;
+        const content = '\uFEFF' + text; // Add BOM for UTF-8
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'codegen-output.txt';
+        a.click();
+        this.animateIcon();
       }
 
       render() {
         const template = `
           <button 
-            on-click="copy" 
-            class="absolute top-2 right-4 p-2 hover:bg-gray-400 dark:hover:bg-gray-900 rounded-md transition-all">
-            <i data-icon="copy" class="size-5 block"></i>
+            on-click="{mode}"
+            class="p-2 hover:bg-gray-400 dark:hover:bg-gray-900 rounded-md transition-all">
+            <i data-icon="{mode}" class="size-5 block"></i>
           </button>
         `;
         return buildAndInterpolate(template, this);
@@ -75,7 +94,7 @@
 
     }
     
-    registerComponent('copy-text-component', CopyTextComponent);
+    registerComponent('copy-component', CopyTextComponent);
 
     const entities = [
       {
@@ -167,7 +186,7 @@
         const isXml = xmlInput.trim().startsWith('<');
         ctx.files = isXml ? codeGen.generateFromXml(xmlInput) 
                           : codeGen.generate(JSON.parse(xmlInput));
-        ctx.result = ctx.files.map(file => `// ========== ${file.fileName} ==========\n${file.content}`).join('\n\n');
+        ctx.result = ctx.files.map(file => `// ${file.fileName}\n${file.content}`).join('\n\n');
       } catch (error) {
         ctx.result = `Error: ${error.message}`;
         ctx.files = [];
@@ -227,6 +246,12 @@
     <h1 class="text-xl font-bold tracking-tight flex-1">CodeGen Playground</h1>
     <div data-component="clock-component"></div>
     <div data-component="theme-toggle-component" class=""></div>
+    <a href="https://webapivanillajs2026-axhxdzg8h5fub7hj.canadacentral-01.azurewebsites.net/index.html" 
+      class="px-5 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800 shadow-sm hover:shadow transition-all"
+      target="_blank">
+      Azure
+    </a>
+    
   </header>
 
   <div class="flex-1 flex flex-col p-4 gap-4 max-w-screen-2xl mx-auto w-full">
@@ -274,8 +299,7 @@
       </div>
     </div>
 
-    <div 
-      data-component="collapsible-component" 
+    <div data-component="collapsible-component" 
       data-expanded="true" 
       data-padding="p-1"
       data-title="Código" 
@@ -288,8 +312,7 @@
       </div>
 
       <!-- Output: sidebar + code -->
-      <div
-        data-bind="show:result"
+      <div data-bind="show:result"
         class="flex-1 flex flex-col lg:flex-row min-h-[400px]">
         
         <!-- File list sidebar -->
@@ -301,15 +324,20 @@
 
         <!-- Code output -->
         <div class="flex-1 min-w-0 m-2 relative">
-          <div data-component="copy-text-component" (text-provider)="resolveCode"></div>
+          <div class="absolute top-2 right-4 flex gap-1 bg-gray-100 dark:bg-gray-800/70 rounded-md p-1 z-10">
+            <div data-component="copy-component" data-mode="download" data-target="#code-output"></div>
+            <div data-component="copy-component" (text-provider)="resolveCode"></div>            
+          </div>
           <pre 
             id="code-output"
             data-bind="text:result"
-            class="w-full h-full min-h-[400px] rounded-lg p-4 bg-gray-200 dark:bg-gray-800/70 text-gray-800 
-            dark:text-gray-200 font-mono text-sm leading-relaxed overflow-auto">
-          </pre>
-         
+            class="
+              w-full h-full min-h-[400px] rounded-lg p-4 bg-gray-200 dark:bg-gray-800/70 text-gray-800 
+              dark:text-gray-200 font-mono text-sm leading-relaxed overflow-auto
+            ">
+          </pre>        
         </div>
+
       </div>    
     <div>
 

@@ -209,6 +209,74 @@ namespace Negocio.Entities${entity.namespace || ''} {
 }`;
   }
 
+  // --- Minimal API Endpoints generation ---
+  function generateEndpoints(entity) {
+    const ns = entity.namespace || '';
+    const itemLower = entity.itemName.charAt(0).toLowerCase() + entity.itemName.slice(1);
+    const routePath = `/api/${entity.collectionName.toLowerCase()}`;
+    const nonIdProps = entity.properties.filter(p => !p.isId && p.name.toLowerCase() !== 'id');
+    const createParams = nonIdProps.map(p => `${itemLower}.${p.name}`).join(', ');
+
+    return `
+// ========================================================
+// Api.Endpoints.${entity.itemName}Endpoints.cs
+// ========================================================
+namespace Api.Endpoints${ns} {
+
+  using Microsoft.AspNetCore.Builder;
+  using Microsoft.AspNetCore.Http;
+  using Microsoft.AspNetCore.Routing;
+  using Negocio.Entities${ns};
+  using Dal.Core;
+
+  public static class ${entity.itemName}Endpoints {
+
+    public static void Map${entity.itemName}Endpoints(this IEndpointRouteBuilder app) {
+      var group = app.MapGroup("${routePath}").WithTags("${entity.collectionName}");
+
+      // GET ALL
+      group.MapGet("/", (DbContext dbContext) => {
+        var lista = new ${entity.collectionName}(dbContext);
+        return Results.Ok(lista.Load());
+      });
+
+      // GET BY ID
+      group.MapGet("/{id:long}", (long id, DbContext dbContext) => {
+        var item = new ${entity.itemName}(dbContext).Load(id);
+        if (item == null) return Results.NotFound();
+        return Results.Ok(item);
+      });
+
+      // POST (Create)
+      group.MapPost("/", (${entity.itemName} ${itemLower}, DbContext dbContext) => {
+        var item = new ${entity.itemName}(dbContext) {
+${nonIdProps.map(p => `          ${p.name} = ${itemLower}.${p.name}`).join(',\n')}
+        };
+        item.Save();
+        return Results.Created($"${routePath}/{item.Id}", item);
+      });
+
+      // PUT (Update)
+      group.MapPut("/{id:long}", (long id, ${entity.itemName} ${itemLower}, DbContext dbContext) => {
+        var item = new ${entity.itemName}(dbContext).Load(id);
+        if (item == null) return Results.NotFound();
+${nonIdProps.map(p => `        item.${p.name} = ${itemLower}.${p.name};`).join('\n')}
+        item.Save();
+        return Results.Ok(item);
+      });
+
+      // DELETE
+      group.MapDelete("/{id:long}", (long id, DbContext dbContext) => {
+        var item = new ${entity.itemName}(dbContext).Load(id);
+        if (item == null) return Results.NotFound();
+        item.Delete();
+        return Results.NoContent();
+      });
+    }
+  }
+}`;
+  }
+
   // --- Binders generation ---
   function mapBinderType(dbType) {
     const types = {
@@ -281,7 +349,7 @@ namespace Negocio.Entities${entity.namespace || ''} {
   function generateAllFiles(entities) {
     const files = [];
 
-    // 3 files per entity: Repository, EntityList, EntityItem
+    // 4 files per entity: Repository, EntityList, EntityItem, Endpoints
     entities.forEach(entity => {
       files.push({
         fileName: `${entity.collectionName}Repository.cs`,
@@ -294,6 +362,10 @@ namespace Negocio.Entities${entity.namespace || ''} {
       files.push({
         fileName: `${entity.itemName}.cs`,
         content: generateEntityItem(entity).trim()
+      });
+      files.push({
+        fileName: `${entity.itemName}Endpoints.cs`,
+        content: generateEndpoints(entity).trim()
       });
     });
 
