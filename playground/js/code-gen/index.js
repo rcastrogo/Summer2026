@@ -235,21 +235,21 @@ namespace Api.Endpoints${ns} {
       var group = app.MapGroup("${routePath}").WithTags("${entity.collectionName}");
 
       // GET ALL
-      group.MapGet("/", (DbContext dbContext) => {
-        var lista = new ${entity.collectionName}(dbContext);
+      group.MapGet("/", () => {
+        var lista = new ${entity.collectionName}();
         return Results.Ok(lista.Load());
       });
 
       // GET BY ID
-      group.MapGet("/{id:long}", (long id, DbContext dbContext) => {
-        var item = new ${entity.itemName}(dbContext).Load(id);
+      group.MapGet("/{id:long}", (long id) => {
+        var item = new ${entity.itemName}().Load(id);
         if (item == null) return Results.NotFound();
         return Results.Ok(item);
       });
 
       // POST (Create)
-      group.MapPost("/", (${entity.itemName} ${itemLower}, DbContext dbContext) => {
-        var item = new ${entity.itemName}(dbContext) {
+      group.MapPost("/", (${entity.itemName} ${itemLower}) => {
+        var item = new ${entity.itemName}() {
 ${nonIdProps.map(p => `          ${p.name} = ${itemLower}.${p.name}`).join(',\n')}
         };
         item.Save();
@@ -257,8 +257,8 @@ ${nonIdProps.map(p => `          ${p.name} = ${itemLower}.${p.name}`).join(',\n'
       });
 
       // PUT (Update)
-      group.MapPut("/{id:long}", (long id, ${entity.itemName} ${itemLower}, DbContext dbContext) => {
-        var item = new ${entity.itemName}(dbContext).Load(id);
+      group.MapPut("/{id:long}", (long id, ${entity.itemName} ${itemLower}) => {
+        var item = new ${entity.itemName}().Load(id);
         if (item == null) return Results.NotFound();
 ${nonIdProps.map(p => `        item.${p.name} = ${itemLower}.${p.name};`).join('\n')}
         item.Save();
@@ -266,8 +266,8 @@ ${nonIdProps.map(p => `        item.${p.name} = ${itemLower}.${p.name};`).join('
       });
 
       // DELETE
-      group.MapDelete("/{id:long}", (long id, DbContext dbContext) => {
-        var item = new ${entity.itemName}(dbContext).Load(id);
+      group.MapDelete("/{id:long}", (long id) => {
+        var item = new ${entity.itemName}().Load(id);
         if (item == null) return Results.NotFound();
         item.Delete();
         return Results.NoContent();
@@ -321,16 +321,16 @@ ${nonIdProps.map(p => `        item.${p.name} = ${itemLower}.${p.name};`).join('
 
       const selectCols = allDbNames.join(', ');
       const insertCols = nonIdProps.map(p => p.dbName).join(', ');
-      const insertPlaceholders = nonIdProps.map((_, i) => `{${i}}`).join(', ');
+      const insertPlaceholders = nonIdProps.map((p) => `@${p.dbName}`).join(', ');
 
-      const updateSets = nonIdProps.map((p, i) => `${p.dbName} = {${i + 1}}`).join(', ');
+      const updateSets = nonIdProps.map((p) => `${p.dbName} = @${p.dbName}`).join(', ');
 
       const lines = [
         `#${repoName}.OrderBy%Id ASC`,
-        `#${repoName}.Delete%DELETE FROM ${entity.tableName} WHERE Id={0}`,
+        `#${repoName}.Delete%DELETE FROM ${entity.tableName} WHERE Id=@Id`,
         `#${repoName}.Select%SELECT ${selectCols} FROM ${entity.tableName}`,
-        `#${repoName}.Insert%INSERT INTO ${entity.tableName} (${insertCols}) VALUES(${insertPlaceholders}) ; SELECT CAST(SCOPE_IDENTITY() AS BIGINT);`,
-        `#${repoName}.Update%UPDATE ${entity.tableName} SET ${updateSets} WHERE Id={0}`
+        `#${repoName}.Insert%INSERT INTO ${entity.tableName} (${insertCols}) VALUES(${insertPlaceholders}); SELECT CAST(SCOPE_IDENTITY() AS BIGINT);`,
+        `#${repoName}.Update%UPDATE ${entity.tableName} SET ${updateSets} WHERE Id=@Id`
       ];
 
       return `${header}\n${lines.join('\n')}`;
