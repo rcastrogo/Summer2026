@@ -18,6 +18,7 @@
       this.progress = 0;
       this.intervalId = 0;
       this.running = true;
+      this.position = '';
     }
 
     init(ctx) {
@@ -63,23 +64,24 @@
       const position         = this.props.percentagePosition || 'center';
       const percentageClasses = 'text-[10px] font-light text-gray-700 dark:text-gray-300 whitespace-nowrap';
       const progressClasses  = this.resolveProgressClasses();
+      this.position = showPercentage ? position : '';
 
       const template = `
         <div class="h-1 w-full flex text-center ${position === 'center' ? 'flex-col' : 'items-center'}">     
-          @if(${showPercentage && position === 'left'})
+          @if(position === 'left')
             <span class="w-10 font-bold ${percentageClasses}">
               {progress}%
             </span>
           @endif
           <div class="flex-1 relative h-full">
-            <div class="h-full w-full rounded-full border">
+            <div class="h-full w-full rounded-full">
               <div 
                 class="h-full rounded-full transition-all duration-100 ease-out ${progressClasses}" 
-                style="width: {progress}%;"
+                style="width: {progress}%"
               >
               </div>      
             </div>
-            @if(${showPercentage && position === 'center'})
+            @if(position === 'center')
               <div class="text-center absolute inset-0 flex items-center justify-center">
                 <span class="font-bold ${this.progress < 50 ? '' : 'text-white'} ${percentageClasses}">
                   {progress}%
@@ -87,7 +89,7 @@
               </div>
             @endif          
           </div>
-          @if(${showPercentage && position === 'right'})
+          @if(position === 'right')
             <span class="w-10 font-bold ${percentageClasses}">
               {progress}%
             </span>
@@ -98,6 +100,6 @@
     }
   }
 
-  registerComponent('progress-bar-component', ProgressBarComponent);
+  registerComponent('app-progress-bar-component', ProgressBarComponent);
 
 }());

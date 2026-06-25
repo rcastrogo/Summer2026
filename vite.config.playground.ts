@@ -17,7 +17,7 @@ export default defineConfig({
   publicDir: 'src/js',
 
   server: {
-    port: 3000,
+    port: 5173,
     open: '/playground/index.html',
   },
 

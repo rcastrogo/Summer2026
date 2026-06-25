@@ -14,6 +14,7 @@
   <script src="../icons.js"></script>
   <script src="../vanilla-reactive.iife.js"></script>
   <script src="../app-components-bundle.js"></script>
+  <script src="../app-components/samples/alert-component.js"></script>
   <script src="index.js"></script>
 
   <link rel="stylesheet" href="../../css/app.css">
@@ -24,7 +25,8 @@
   <script>
 
     const { $ } = VanillaReactive.dom;
-    const { BaseComponent, buildAndInterpolate, registerComponent } = VanillaReactive;
+    const { BaseComponent, buildAndInterpolate, registerComponent, services } = VanillaReactive;
+    const ds = services.dialogService;
 
     // ==============================================================================
     // Custom component to copy text to clipboard
@@ -155,10 +157,144 @@
       }
     };
 
-    function populate(template, ctx, el) {
-      const rendered = VanillaReactive.buildAndInterpolate(template, ctx);
+    function populate(template, ctx, el) {      
       el.innerHTML = '';
+      const rendered = buildAndInterpolate(template, ctx);
       while (rendered.firstChild) el.appendChild(rendered.firstChild);
+    }
+
+    function invokeEndpoint(el, ev, ruta) {
+
+      const cleanRuta = ruta.startsWith('/') ? ruta : ('/' + ruta);
+
+      // Prepara los estados de la interfaz e inicia la petición
+      const doInvoke = (route) => {
+        ctx.apiResponseText = '';
+        ctx.waitingForResponse = true;
+        ctx.updateBindings();
+        invoke(route || cleanRuta);
+      };
+
+      // Realiza la llamada HTTP asíncrona
+      const invoke = async (route) => {        
+        try {
+          const req = services.RQ.create();
+          const result = await req.useBase(AZURE_BASE_URL)
+                                  .getFrom(route)
+                                  .useLog(`Invoking ${route}`)
+                                  .invoke();      
+          if (typeof result === 'string') {
+            ctx.apiResponseText = result;
+          } else {
+            const dataToRender = result && result.data !== undefined ? result.data : result;
+            ctx.apiResponseText = JSON.stringify(dataToRender, null, 2);
+          }
+        } catch (error) {
+          ctx.apiResponseText = `Error en la petición: ${error.message}`;
+        } finally {
+          ctx.waitingForResponse = false;
+          ctx.updateBindings();
+        }
+      };
+
+      // Buscar parámetros en la URL tipo {id} o {id:long}
+      const paramMatch = cleanRuta.match(/\{([^}]+)\}/);
+      // =============================================================================
+      // 1 No requiere parámetros, invoca directamente
+      // =============================================================================
+      if (!paramMatch) {
+        doInvoke();
+        return;
+      }
+      // =============================================================================
+      // 2 Requiere parámetros, muestra un diálogo para que el usuario los ingrese
+      // =============================================================================
+      const fullPlaceholder = paramMatch[0]; // Ej: "{id:long}"
+      const paramName = paramMatch[1];       // Ej: "id:long"
+
+      const message = `
+        <div class="space-y-3 text-left p-2">
+          <p class="font-semibold">Introduzca el valor del parámetro "${paramName}"</p>
+          <input type="text" placeholder="Escriba el valor aquí..." 
+            class="w-full p-2 border rounded dark:bg-slate-800 dark:border-slate-600 dark:text-white" />
+        </div>
+      `;
+
+      const onConfirm = (dlg) => {
+        const value = $('input', dlg.element).one()?.value || '';
+        const route = cleanRuta.replace(
+          fullPlaceholder, 
+          encodeURIComponent(value.trim())
+        );
+        doInvoke(route);
+        dlg.close();
+      }
+
+      ds.showDialog({
+        title: 'Parámetro requerido',
+        asHtml: true,
+        size: 'sm',
+        showConfirmButton: true,
+        literals: ['Cancelar', 'Aceptar'],
+        message,
+        onConfirm,
+      });
+
+    }
+
+    function updateEndpointList(el){
+      populate(`
+          <div data-each="endpoint in endpoints">
+            <div class="w-full">              
+              <button 
+                on-click="invokeEndpoint:@endpoint.ruta" 
+                class="px-2 py-1 text-xs font-mono rounded-md cursor-pointer w-full truncate
+                  bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 
+                  hover:bg-indigo-100 dark:hover:bg-indigo-900/40 hover:text-indigo-700 
+                  dark:hover:text-indigo-300 border border-transparent hover:border-indigo-300 
+                  dark:hover:border-indigo-600 transition-all"
+                >
+                {endpoint.ruta}
+              </button>
+            </div>
+          </div>
+        `, {...ctx, invokeEndpoint}, el
+      );
+    }
+
+    function getEndpoints() {
+
+      const invoke = async () => {
+        const req = services.RQ.create();
+        const result = await req.useBase(AZURE_BASE_URL)
+                                .getFrom('/api/system/routes')
+                                .useLog('Fetching routes')
+                                .invoke();
+        if (typeof result === 'string') {
+          ctx.endpoints = [];
+          ctx.apiResponseText = result;
+        } else {
+          const filter = (endpoint) => {
+            return endpoint && endpoint.metodos && endpoint.metodos[0] === 'GET';
+          };
+          ctx.endpoints = VanillaReactive.utils.where(result.data || [], filter);
+        }
+        ctx.loading = false;
+        ctx.updateBindings();
+
+        if(ctx.endpoints.length > 0 && ctx.endpoints[0].ruta){
+          invokeEndpoint(null, null, ctx.endpoints[0].ruta);
+        }
+
+      };
+
+      invoke();
+
+      ctx.apiResponseText = '';
+      ctx.loading = true;
+      ctx.endpoints = [];
+      ctx.updateBindings(); 
+  
     }
 
     function updateFileList(el){
@@ -208,7 +344,10 @@
       ctx.updateBindings();
     }
 
+    const AZURE_BASE_URL = 'https://webapivanillajs2026-axhxdzg8h5fub7hj.canadacentral-01.azurewebsites.net';
     const ctx = {
+      azureBaseUrl: AZURE_BASE_URL,
+      azureIndexUrl: AZURE_BASE_URL + '/index.html',
       updateBindings() {
         this.bindings?.forEach(binding => {
           VanillaReactive.resolveBindingValue(binding, this);
@@ -216,6 +355,10 @@
       },
       schema: xml,
       result: '',
+      apiResponseText: '',
+      endpoints: [],
+      getEndpoints,
+      loading: false,
       generateCode,
       clearCode,
       setJson,
@@ -246,7 +389,8 @@
     <h1 class="text-xl font-bold tracking-tight flex-1">CodeGen Playground</h1>
     <div data-component="clock-component"></div>
     <div data-component="theme-toggle-component" class=""></div>
-    <a href="https://webapivanillajs2026-axhxdzg8h5fub7hj.canadacentral-01.azurewebsites.net/index.html" 
+    <a 
+      data-bind="attr.href:azureIndexUrl"
       class="px-5 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800 shadow-sm hover:shadow transition-all"
       target="_blank">
       Azure
@@ -284,7 +428,7 @@
     <!-- Schema input -->
     <div 
       data-component="collapsible-component" 
-      data-expanded="true"
+      data-expanded="false"
       data-padding="p-2"
       data-title="Entidades" 
       class="">
@@ -317,7 +461,10 @@
         
         <!-- File list sidebar -->
         <aside class="w-full lg:w-56 shrink-0 m-2">
-          <nav data-bind="fn:updateFileList" class="flex flex-row lg:flex-col flex-wrap gap-1.5 bg-white dark:bg-gray-900 lg:max-h-none overflow-auto">
+          <nav 
+            data-bind="fn:updateFileList"
+            data-deps="files"
+            class="flex flex-row lg:flex-col flex-wrap gap-1.5 bg-white dark:bg-gray-900 lg:max-h-none overflow-auto">
             <!-- File list will be rendered here -->
           </nav>
         </aside>
@@ -338,8 +485,70 @@
           </pre>        
         </div>
 
-      </div>    
-    <div>
+      </div>   
+
+    </div>
+
+    <div data-component="collapsible-component" 
+      data-expanded="false" 
+      data-padding="p-1"
+      data-title="Endpoints Azure"
+      >
+      <div class="p-2 flex flex-wrap gap-2">
+        <a 
+          data-bind="attr.href:azureIndexUrl" 
+          class="px-5 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800 shadow-sm hover:shadow transition-all"
+          target="_blank">
+          Abrir en Azure
+        </a>
+        <button 
+          class="px-5 py-2 text-sm font-medium rounded-lg bg-gray-500 text-white hover:bg-gray-600 active:bg-gray-700 shadow-sm hover:shadow transition-all" 
+          on-click="getEndpoints">
+          Obtener Endpoints
+        </button>
+      </div>
+
+      <div data-bind="show:loading">
+        <div data-component="progress-bar-component" data-message=" "></div>         
+      </div>
+
+      <div 
+        class="p-2 flex flex-col lg:flex-row gap-4 items-start"
+        data-bind="show:endpoints"
+        >
+
+        <aside class="w-full lg:w-56 shrink-0">
+          <nav 
+            data-bind="fn:updateEndpointList" 
+            data-deps="endpoints"
+            class="max-h-60 flex flex-row lg:flex-col flex-wrap gap-1.5 bg-white dark:bg-gray-900 lg:max-h-none overflow-auto">
+          </nav>
+        </aside>
+
+        <div class="w-full" data-bind="show:waitingForResponse">
+          <div data-component="progress-bar-component" data-message=" "></div>         
+        </div>
+
+        <pre 
+          id="endpoints-output"
+          data-bind="text:apiResponseText;show:apiResponseText"
+          class="
+            w-full lg:flex-1 min-h-[200px] rounded-lg p-4 bg-gray-200 dark:bg-gray-800/70 text-gray-800 
+            dark:text-gray-200 font-mono text-sm leading-relaxed overflow-auto
+          ">
+        </pre>
+
+      </div>
+
+    </div>
+
+    <div 
+      data-component="app-progress-bar-component" 
+      data-show-percentage="true"
+      data-percentage-position="center"
+      class="mt-2"
+      >
+    </div>     
 
   </div>
 

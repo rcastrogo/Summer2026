@@ -7,6 +7,8 @@ import type { BindingResolver, ComponentBinding, ComponentContext, ComponentCons
 
 import { pubSub } from "./services/pubsub.service";
 
+export const UNSET = Symbol('UNSET');
+
 // =======================================================================
 // Registro de componentes
 // =======================================================================
@@ -163,16 +165,26 @@ export function hydrateEventListeners(container: HTMLElement, ctx: ComponentCont
             const [type, prop] = typeAndProp.includes('.')
               ? typeAndProp.split('.')
               : [typeAndProp, null];
-            const binding = {
+            const binding: ComponentBinding = {
               element: el,
               type,
               prop,
               path,
               params,
+              lastValue: UNSET,
             };
+            // Dependencias explícitas para funciones: si el binding es de tipo 'fn', 
+            // buscamos un atributo 'data-deps' que contenga las expresiones de las dependencias 
+            // separadas por comas.
+            if (type === 'fn') {
+              const depsAttr = el.getAttribute('data-deps');
+              if (depsAttr)
+                binding.depExpressions = depsAttr.split(',').map(d => d.trim()).filter(Boolean);
+            }
             ctx.bindings.push(binding);
             resolveBindingValue(binding, ctx);
           });
+        el.removeAttribute('data-deps');
         el.removeAttribute(attrName);
       }
     });
@@ -342,21 +354,58 @@ function findLocalCtx(element: HTMLElement): ComponentContext | null {
   return null;
 }
 
+function shallowEqual(a: unknown[], b: unknown[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (!Object.is(a[i], b[i])) return false;
+  }
+  return true;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function resolveBindingValue(binding: ComponentBinding, ctx: Record<string, unknown>): any {
   const resolver = getResolver(binding);
   let path = binding.path;
-  if(binding.type === 'fn' && binding.params && binding.params.length > 0){
+  if(
+    binding.type === 'fn' && 
+    binding.params && 
+    binding.params.length > 0){
     // Si es una función con parámetros, el path real es el primer parámetro
     path = binding.params[0] as string;
   }
+  let resolvedValue: unknown;
   const value = getValue(path, ctx);
   if (value !== undefined) {
-    resolver(binding.element, value);
+    resolvedValue = value;
+  } else {
+    const localCtx = findLocalCtx(binding.element);
+    resolvedValue = getValue(path, localCtx);
+  }
+
+  // --- fn con deps explícitas: memoización por dependencias ---
+  if (binding.type === 'fn' && binding.depExpressions) {
+    const currentDeps = binding.depExpressions.map(dep => getValue(dep, ctx));
+    if (binding.lastDeps && shallowEqual(currentDeps, binding.lastDeps)) {
+      return;
+    }
+    binding.lastDeps = currentDeps;
+    binding.lastValue = resolvedValue;
+    resolver(binding.element, resolvedValue);
     return;
   }
-  const localCtx = findLocalCtx(binding.element);
-  const localValue = getValue(path, localCtx);
-  // console.log(`Resolviendo binding:`, { path: path, value, localCtx });
-  resolver(binding.element, localValue);
+
+  // --- fn sin deps: siempre ejecuta ---
+  if (binding.type === 'fn') {
+    binding.lastValue = resolvedValue;
+    resolver(binding.element, resolvedValue);
+    return;
+  }
+
+  // --- Resto de tipos: dirty-check por valor ---
+  if (binding.lastValue !== UNSET && Object.is(resolvedValue, binding.lastValue)) {
+    return;
+  }
+  binding.lastValue = resolvedValue;
+  resolver(binding.element, resolvedValue);
 }
+
