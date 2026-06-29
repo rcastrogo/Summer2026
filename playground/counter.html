@@ -14,6 +14,8 @@
   <script src="js/icons.js"></script> 
   <script src="js/vanilla-reactive.iife.js"></script>
   <script src="js/app-components-bundle.js"></script>
+  <script src="js/app-components/samples/notification-panel.component.js"></script>
+  <script src="js/app-components/samples/alert-component.js"></script>
 
   <link rel="stylesheet" href="css/app.css">
   <style>
@@ -30,8 +32,11 @@
       hydrateElement,
       pubSub,
       services,
-      dom
+      dom,
+      state,
+      utils
     } = VanillaReactive;
+    const { useState } = state;
 
     // Componente counter usando factory function
     const CounterComponent = function (ctx) {
@@ -82,10 +87,170 @@
       return self;
     };
   
+    
+    const ctx = (() => {
+
+      const ds = services.dialogService;
+
+      // =====================================================================
+      // DATOS
+      // =====================================================================
+      const EMPTY_ERRORS = { name: '', username: '', email: '', age: '', role: '', terms: '' };
+      const EMPTY_USER = {
+        name: '', username: '', email: '', age: '', role: '', terms: false, isDirty: false,
+      };
+
+      const MOCK_USERS = [
+        { name: 'Rafael Castro', username: 'CoderRafa', email: 'rcastro@hotmail.com', age: '34', role: 'admin', terms: true },
+        { name: 'Laura Gómez', username: 'lauraG', email: 'laura.gomez@gmail.com', age: '28', role: 'editor', terms: true },
+        { name: 'Carlos Méndez', username: 'carlosmdev', email: 'cmendez@outlook.es', age: '41', role: 'admin', terms: true },
+        { name: 'Ana Torres', username: 'anatorres', email: 'ana.torres@empresa.com@', age: '17', role: 'suscriptor', terms: false },
+        { name: 'Miguel Ángel Ruiz', username: 'mruiz', email: 'miguel.ruiz@yahoo.com', age: '55', role: 'editor', terms: true },
+        { name: 'Sofía Martínez', username: 'sofi_mtz', email: 'sofia.martinez@correo.org', age: '19', role: 'suscriptor', terms: true },
+        { name: 'Javier López', username: 'javiL', email: 'jlopez@dev.io', age: '37', role: 'admin', terms: true },
+        { name: 'Marta Sánchez', username: 'martasanchez', email: 'marta.s@inbox.com', age: '30', role: 'editor', terms: false },
+        { name: 'Diego Fernández', username: 'diegof', email: 'diego.fernandez@mail.es', age: '26', role: 'suscriptor', terms: true },
+        { name: 'Elena Vargas', username: 'evargas', email: 'elena.vargas@startup.tech', age: '44', role: 'admin', terms: true },
+      ];
+
+      // =====================================================================
+      // ESTADO REACTIVO
+      // =====================================================================
+      const {store, put, on, batch, effect} = useState({...EMPTY_USER, errors: {...EMPTY_ERRORS}});
+
+      // =====================================================================
+      // VALIDACIÓN
+      // =====================================================================
+      const VALIDATORS = {
+        name:     (v) => !v.trim() ? 'El nombre es obligatorio.' : '',
+        username: (v) => !v.trim() ? 'El nombre de usuario es obligatorio.' : '',
+        email:    (v) => {
+          if (!v.trim()) return 'El correo electrónico es obligatorio.';
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'El correo electrónico no es válido.';
+          return '';
+        },
+        age: (v) => {
+          if (!v.trim()) return 'La edad es obligatoria.';
+          if (isNaN(v) || parseInt(v) < 18) return 'La edad debe ser un número mayor o igual a 18.';
+          return '';
+        },
+        role:  (v) => !v.trim() ? 'Debe seleccionar un rol.' : '',
+        terms: (v) => !v ? 'Debe aceptar los términos de servicio.' : '',
+      };
+
+      function validateProp(name, value) {
+        const fn = VALIDATORS[name];
+        if (!fn) return;
+        put('errors', { ...store.errors, [name]: fn(value) });
+      }
+
+      function validateAll() {
+        const errors = {};
+        for (const key in VALIDATORS) {
+          errors[key] = VALIDATORS[key](store[key]);
+        }
+        put('errors', errors);
+        return Object.values(errors).every(e => !e);
+      }
+
+      // =====================================================================
+      // SUSCRIPCIONES
+      // =====================================================================
+      on('errors', (value) => {
+        ctx.valid = Object.values(value).every(e => !e);
+      });
+
+      effect(() => {
+        console.log(
+          '1 Como document.ready, se ejecuta una vez al montar el componente:'
+        );
+      });
+
+      effect(() => {
+        console.log(
+          '2 cualquier cambio en el estado del formulario:'
+        );
+      }, []);
+
+      effect(() => {
+        console.log('3 cambios en email o edad:');
+      }, ['email', 'age']);
+
+      // =====================================================================
+      // HANDLERS
+      // =====================================================================
+      const updateState = utils.debounce((el) => {
+        const name = el.name;
+        const value = el.type === 'checkbox' ? el.checked : el.value;
+        put(name, value);
+        put('isDirty', true);
+        validateProp(name, value);
+        updateBindings();
+      }, 200);
+
+      function handleBlur(el) {
+        validateProp(el.name, store[el.name]);
+      }
+
+      function handleLoad() {
+        const dlg = ds.showLoading('Por favor espere...');
+        setTimeout(() => {
+          dlg.instance.close();
+          const user = MOCK_USERS[Math.floor(Math.random() * MOCK_USERS.length)];
+          batch({ ...user, isDirty: false, errors: { ...EMPTY_ERRORS } }, false);
+          validateAll();
+          updateBindings();
+        }, 1_000);
+      }
+
+      function handleNew() {
+        batch({ ...EMPTY_USER, errors: { ...EMPTY_ERRORS } }, false);
+        ctx.valid = false;
+        updateBindings();
+      }
+
+      function handleSubmit(el, ev) {
+        ev.preventDefault();
+        if (!validateAll()) {
+          updateBindings();
+          return;
+        }
+
+        const dlg = ds.showLoading('Grabando datos...');
+        setTimeout(() => {
+          // const formData = new FormData(el);
+          // const data = utils.getSafeFormData(formData);          
+          // const message = `<pre class="text-xs whitespace-pre-wrap text-left">${JSON.stringify(data,null, 2)}</pre>`
+          dlg.instance.close();
+          services.notificationService.success('Datos grabados correctamente');
+        }, 500);
+      }
+
+      function updateBindings() {
+        ctx.bindings?.forEach(binding => resolveBindingValue(binding, ctx));
+      }
+
+      // =====================================================================
+      // API PÚBLICA
+      // =====================================================================
+      const ctx = {
+        store, on,
+        valid: false,
+        updateState,
+        handleBlur,
+        handleLoad,
+        handleNew,
+        handleSubmit,
+      };
+
+      return ctx;
+
+    })();
+
     VanillaReactive.initApp([
       () => {
         registerComponent('counter-component', CounterComponent);
-        hydrateElement(document.body, {});
+        hydrateElement(document.body, ctx);
       }
     ]);
 
@@ -94,7 +259,7 @@
 </head>
 
 <body class="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors">
-  <div class="max-w-4xl mx-auto space-y-8 px-4">
+  <div class="max-w-4xl mx-auto space-y-8 px-4 mb-8">
 
     <header class="">
       <div data-component="header-component" class=""></div>
@@ -127,8 +292,8 @@
 
     <div 
       data-component="collapsible-component" 
-      class="mt-8" 
-      data-title="Detalles del código" 
+      class="" 
+      data-title="Detalles del código del componente CounterComponent" 
       data-expanded="false">
       <p>
         El componente CounterComponent se define como una función que devuelve un objeto con su estado, métodos y ciclo de vida.
@@ -136,6 +301,187 @@
         Al hacer clic en los botones, se llaman a los métodos increment o decrement, que actualizan el estado y luego llaman a updateBindings para refrescar la interfaz.
       </p>
     </div>
+
+    <div class="w-full p-6 sm:p-8 rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-300 dark:border-slate-800 dark:bg-slate-900">
+      
+      <div class="mb-4">
+        <h2 class="text-xl font-bold sm:text-2xl">
+          Datos de Usuario
+          <i data-bind="show:store.isDirty"> (modificado)</i>
+          <span on-state="show:isDirty" style="display: none;">
+            <i data-icon="edit" class="inline-block size-8"></i>             
+          </span>
+        </h2>
+        <p class="mt-1 text-sm">Formulario limpio listo para implementar lógica de validación.</p>
+      </div>
+
+      <form on-submit="handleSubmit" method="POST" autocomplete="off" class="">
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          
+          <div>
+            <label for="name" class="block text-sm font-medium text-slate-700 mb-1.5">
+              Nombre completo
+            </label>
+            <input 
+              type="text" 
+              id="name" 
+              name="name"
+              spellcheck="false"
+              data-bind="value:store.name"
+              on-input="updateState"
+              on-blur="handleBlur"
+              placeholder="Juan Pérez"
+              class="w-full px-3.5 py-2 bg-background border border-slate-300 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm"
+            >            
+            <div on-state="text:errors.name | upper" class="text-blue-600 text-sm mt-1"></div>
+            <div data-bind="text:store.errors.name" class="text-red-600 text-sm mt-1"></div>
+          </div>
+
+          <div>
+            <label for="username" class="block text-sm font-medium text-slate-700 mb-1.5">
+              Nombre de usuario
+            </label>
+            <input 
+              type="text" 
+              id="username" 
+              name="username"
+              spellcheck="false"
+              data-bind="value:store.username"
+              on-input="updateState"
+              on-blur="handleBlur"
+              placeholder="juan_perez"
+              class="w-full px-3.5 py-2 bg-background border border-slate-300 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm"
+            >
+            <div on-state="text:errors.username | upper" class="text-blue-600 text-sm mt-1"></div>
+            <div data-bind="text:store.errors.username" class="text-red-600 text-sm mt-1"></div>
+          </div>
+
+          <div>
+            <label for="email" class="block text-sm font-medium text-slate-700 mb-1.5">
+              Correo electrónico
+            </label>
+            <input 
+              type="text" 
+              id="email" 
+              name="email"
+              spellcheck="false"
+              data-bind="value:store.email"
+              on-input="updateState"
+              on-blur="handleBlur"
+              placeholder="juan@ejemplo.com"
+              class="w-full px-3.5 py-2 bg-background border border-slate-300 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm"
+            >
+            <div on-state="text:errors.email | upper" class="text-blue-600 text-sm mt-1"></div>
+            <div data-bind="text:store.errors.email" class="text-red-600 text-sm mt-1"></div>
+          </div>
+
+          <div>
+            <label for="age" class="block text-sm font-medium text-slate-700 mb-1.5">
+              Edad
+            </label>
+            <input 
+              type="text" 
+              id="age" 
+              name="age"
+              spellcheck="false"
+              data-bind="value:store.age"
+              on-input="updateState"
+              on-blur="handleBlur"
+              placeholder="Min. 18"
+              class="w-full px-3.5 py-2 bg-background border border-slate-300 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm"
+            >
+            <div on-state="text:errors.age | upper" class="text-blue-600 text-sm mt-1"></div>
+            <div data-bind="text:store.errors.age" class="text-red-600 text-sm mt-1"></div>
+          </div>
+
+          <div class="sm:col-span-2">
+            <label for="role" class="block text-sm font-medium text-slate-700 mb-1.5">
+              Rol asignado
+            </label>
+            <select 
+              id="role" 
+              name="role"
+              spellcheck="false"
+              data-bind="value:store.role"
+              on-input="updateState"
+              on-blur="handleBlur"
+              class="w-full px-3.5 py-2 bg-background border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm"
+            >
+              <option value="">Selecciona una opción...</option>
+              <option value="admin">Administrador</option>
+              <option value="editor">Editor</option>
+              <option value="suscriptor">Suscriptor</option>
+            </select>
+            <div on-state="text:errors.role | upper" class="text-blue-600 text-sm mt-1"></div>
+            <div data-bind="text:store.errors.role" class="text-red-600 text-sm mt-1"></div>
+          </div>
+
+        </div>
+
+        <div class="flex items-start mt-4">
+          <div class="flex items-center h-5">
+            <input 
+              id="terms" 
+              name="terms"
+              data-bind="checked:store.terms"
+              on-input="updateState"
+              on-blur="handleBlur"
+              type="checkbox" 
+              class="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 transition"
+            >
+          </div>
+          <div class="ml-3 text-sm ">
+            <label for="terms" class="font-medium text-slate-700">
+              Acepto los términos de servicio.
+            </label>
+            <p class="text-slate-500">Es obligatorio marcar esta casilla para poder grabar los datos.</p>
+            <div on-state="text:errors.terms | upper" class="text-blue-600 text-sm mt-1"></div>
+            <div data-bind="text:store.errors.terms" class="text-red-600 text-sm mt-1"></div>
+          </div>
+        </div>
+
+        <hr class="border-slate-200 my-2" />
+
+        <div class="flex justify-end gap-2">
+          <button
+            on-click="handleLoad"
+            data-bind=""
+            type="button" 
+            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-lg 
+              transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
+              disabled:opacity-50 disabled:cursor-not-allowed">
+            Cargar Datos
+          </button>
+          <button
+            on-click="handleNew"
+            data-bind=""
+            type="button" 
+            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-lg 
+              transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
+              disabled:opacity-50 disabled:cursor-not-allowed">
+            Nuevo Registro
+          </button>
+          <button
+            data-bind="disabled:valid | not"
+            type="submit" 
+            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-lg 
+              transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
+              disabled:opacity-50 disabled:cursor-not-allowed">
+            Grabar Datos
+          </button>
+        </div>
+
+        <hr class="border-slate-200 my-2" />
+
+        <div class="sm:col-span-2">
+          <pre class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto text-xs text-gray-800 dark:text-gray-100"
+          ><code data-bind="text:store | toJSON"></code></pre>
+        </div>
+
+      </form>
+
+  </div>
 
   </div>
   <div data-component="notification-panel-component" data-position="top-right"></div>
