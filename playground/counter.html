@@ -97,7 +97,7 @@
       // =====================================================================
       const EMPTY_ERRORS = { name: '', username: '', email: '', age: '', role: '', terms: '' };
       const EMPTY_USER = {
-        name: '', username: '', email: '', age: '', role: '', terms: false, isDirty: false,
+        name: '', username: '', email: '', age: 0, role: '', terms: false, isDirty: false,
       };
 
       const MOCK_USERS = [
@@ -440,6 +440,13 @@
             <div data-bind="text:store.errors.terms" class="text-red-600 text-sm mt-1"></div>
           </div>
         </div>
+
+        <hr class="border-slate-200 my-2" />
+        <div class="w-full">
+          <input type="range" class="w-full" min="0" max="100" value="0" on-state="value:age" />
+          <input type="text" readonly class="w-full p-2 text-center" on-state="value:age" />         
+        </div>
+
 
         <hr class="border-slate-200 my-2" />
 
