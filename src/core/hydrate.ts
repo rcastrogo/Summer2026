@@ -356,6 +356,20 @@ export function hydrateDirectives(container: HTMLElement, ctx: any) {
 
 export function getResolver(binding: ComponentBinding): BindingResolver {
   const { type, prop, params } = binding;
+  type ElementWithInstance = HTMLElement & {
+    __instance?: { setProp?: (name: string, value: unknown) => void };
+  };
+
+  const setElementProp = (el: HTMLElement, key: string | null, value: unknown) => {
+    if (!key) return;
+    const ref = (el as ElementWithInstance).__instance;
+    if (ref) {
+      ref.setProp?.(key, value);
+      return;
+    }
+    (el as HTMLElement & Record<string, unknown>)[key] = value ?? '';
+  };
+
   const resolvers: Record<string, BindingResolver> = {
     fn: (el, value) => {
       if (typeof value === 'function') {
@@ -366,14 +380,8 @@ export function getResolver(binding: ComponentBinding): BindingResolver {
     },
     text: (el, value) => el.innerText = value ?? '',
     html: (el, value) => el.innerHTML = value ?? '',
-    value: (el, value) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const ref = (el as any).__instance;
-      if (ref) 
-        ref.setProp?.('value', value);
-      else
-        (el as HTMLInputElement).value = value ?? '';
-    },
+    prop: (el, value) => setElementProp(el, prop, value),
+    value: (el, value) => setElementProp(el, 'value', value),
     checked: (el, value) => (el as HTMLInputElement).checked = !!value,
     attr: (el, value) => value === null || value === undefined ? el.removeAttribute(prop!) : el.setAttribute(prop!, String(value)),
     class: (el, value) => el.className = value ?? '',

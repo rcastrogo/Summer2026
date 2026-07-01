@@ -87,6 +87,27 @@
       return self;
     };
   
+    class PocComponent extends BaseComponent {
+
+      age = 0;
+      email = '';
+      setProp(name, value) {
+        this[name] = value;
+        this.invalidate();
+      }
+
+      render() {
+        const template = `
+          <div class="flex items-center gap-2 text-2xl justify-center">
+            <div>
+              {email} - {age}
+            </div>
+          </div>
+        `;
+        return buildAndInterpolate(template, this);
+      }
+    }
+    registerComponent('poc-component', PocComponent);
     
     const ctx = (() => {
 
@@ -287,7 +308,13 @@
       <div data-component="counter-component"></div>
       <div data-component="counter-component"></div>
       <div data-component="counter-component"></div>
-      <div data-component="progress-bar-component" data-message="Espere..."></div>  
+      <div data-component="progress-bar-component" data-message="Espere..."></div>
+      <div 
+        data-component="poc-component" 
+        on-state="
+          prop.email:email;
+          prop.age:age;
+        "></div>
     </div>
 
     <div 
